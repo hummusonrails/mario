@@ -1,3 +1,5 @@
+BACKEND_URL = "http://localhost:3000";
+
 var requestAnimFrame = (function () {
   return (
     window.requestAnimationFrame ||
@@ -18,6 +20,8 @@ var vX = 0,
   vWidth = 256,
   vHeight = 240;
 var gameTime = 0;
+var playerId; // Player ID for backend integration
+var previousScore = 0;
 
 // Create canvas
 function createCanvas() {
@@ -76,24 +80,52 @@ function showSignInForm() {
   document.body.appendChild(form);
 
   // Handle form submission
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
     const name = form.elements.name.value;
     const email = form.elements.email.value;
     const consent = form.elements.consent.checked;
 
-    // Optional: Send this data to a backend or log for debugging
-    console.log({ name, email, consent });
+    try {
+      // Send player data to the server
+      const response = await fetch(`${BACKEND_URL}/api/players`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, consent }),
+      });
 
-    // Hide the form and start the game
-    form.style.display = "none"; // Hide the form
-    if (canvas) {
-      canvas.style.display = "block"; // Show the canvas
-    } else {
-      createCanvas(); // Create the canvas if it doesn't exist
+      if (!response.ok) throw new Error("Failed to create player record");
+
+      const data = await response.json();
+      console.log("Player record created:", data);
+      playerId = data.playerId;
+
+      // Start the game
+      form.style.display = "none";
+      canvas.style.display = "block";
+      initializeGame();
+    } catch (error) {
+      console.error("Error:", error);
     }
-    initializeGame();
   });
+}
+
+// Send game updates to backend server
+async function sendGameplayUpdate(state) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameplayState: state }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update gameplay state");
+
+    const data = await response.json();
+    console.log("Gameplay state updated:", data);
+  } catch (error) {
+    console.error("Error:", error);
+  }
 }
 
 // Initialize level and start gameplay
@@ -126,60 +158,74 @@ function initLevel() {
 
 // Handles user input
 function handleInput(dt) {
-  if (player.piping || player.dying || player.noInput) return; // don't accept input
+  if (player.piping || player.dying || player.noInput) return;
+
+  const actionState = {
+    jumping: false,
+    running: false,
+    crouching: false,
+    movingLeft: false,
+    movingRight: false,
+  };
 
   if (input.isDown("RUN")) {
     player.run();
-  } else {
-    player.noRun();
-  }
+    actionState.running = true;
+  } else player.noRun();
+
   if (input.isDown("JUMP")) {
     player.jump();
-  } else {
-    // we need this to handle the timing for how long you hold it
-    player.noJump();
-  }
+    actionState.jumping = true;
+  } else player.noJump();
 
   if (input.isDown("DOWN")) {
     player.crouch();
-  } else {
-    player.noCrouch();
-  }
+    actionState.crouching = true;
+  } else player.noCrouch();
 
   if (input.isDown("LEFT")) {
     player.moveLeft();
+    actionState.movingLeft = true;
   } else if (input.isDown("RIGHT")) {
     player.moveRight();
-  } else {
-    player.noWalk();
-  }
+    actionState.movingRight = true;
+  } else player.noWalk();
+
+  sendGameplayUpdate({ action: actionState });
 }
 
 // Updates all entities in the game
 function updateEntities(dt, gameTime) {
-  // Update the player
   player.update(dt, vX);
 
-  // Update other entities
-  updateables.forEach(function (ent) {
-    ent.update(dt, gameTime);
-  });
-
-  // Scroll the viewport if necessary
+  updateables.forEach((ent) => ent.update(dt, gameTime));
   if (player.exiting) {
     if (player.pos[0] > vX + 96) vX = player.pos[0] - 96;
   } else if (level.scrolling && player.pos[0] > vX + 80) {
     vX = player.pos[0] - 80;
   }
 
-  if (player.powering.length !== 0 || player.dying) {
-    return;
-  }
+  if (player.powering.length !== 0 || player.dying) return;
 
   level.items.forEach((ent) => ent.update(dt));
   level.enemies.forEach((ent) => ent.update(dt, vX));
   fireballs.forEach((fireball) => fireball.update(dt));
   level.pipes.forEach((pipe) => pipe.update(dt));
+
+  // Send gameplay state to the server
+  const gameplayState = {
+    position: player.pos,
+    velocity: player.vel,
+    lives: player.lives,
+    score: player.score,
+    progress: { scrollX: vX, time: gameTime },
+  };
+  sendGameplayUpdate(gameplayState);
+
+  if (player.score !== previousScore) {
+    sendGameplayUpdate({ score: player.score });
+    previousScore = player.score;
+  }
 }
 
 // Checks collisions for all game entities
@@ -230,8 +276,8 @@ function renderEntity(entity) {
 
 // Main game loop
 function main() {
-  var now = Date.now();
-  var dt = (now - lastTime) / 1000.0;
+  const now = Date.now();
+  const dt = (now - lastTime) / 1000.0;
 
   update(dt);
   render();
@@ -243,7 +289,6 @@ function main() {
 // Update the game state
 function update(dt) {
   gameTime += dt;
-
   handleInput(dt);
   updateEntities(dt, gameTime);
   checkCollisions();
@@ -258,7 +303,7 @@ function resetToSignIn() {
 
 // Add a mechanism to reset game when a level ends
 function onGameEnd() {
-  setTimeout(resetToSignIn, 2000); // 2 seconds after the game ends
+  setTimeout(resetToSignIn, 2000);
 }
 
 // Initialize the app
