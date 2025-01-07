@@ -84,37 +84,39 @@
 
   Goomba.prototype.isCollideWith = function(ent) {
     if (ent instanceof Mario.Player && (this.dying || ent.invincibility)) {
-      return;
+        return;
     }
 
-    //the first two elements of the hitbox array are an offset, so let's do this now.
     var hpos1 = [this.pos[0] + this.hitbox[0], this.pos[1] + this.hitbox[1]];
     var hpos2 = [ent.pos[0] + ent.hitbox[0], ent.pos[1] + ent.hitbox[1]];
 
-    //if the hitboxes actually overlap
-    if (!(hpos1[0] > hpos2[0]+ent.hitbox[2] || (hpos1[0]+this.hitbox[2] < hpos2[0]))) {
-      if (!(hpos1[1] > hpos2[1]+ent.hitbox[3] || (hpos1[1]+this.hitbox[3] < hpos2[1]))) {
-        if (ent instanceof Mario.Player) { //if we hit the player
-          if (ent.vel[1] > 0) { //then the goomba dies
-            this.stomp();
-          } else if (ent.starTime) {
-            this.bump();
-          } else { //or the player gets hit
-            ent.damage();
-          }
-        } else {
-          this.collideWall();
+    if (!(hpos1[0] > hpos2[0] + ent.hitbox[2] || (hpos1[0] + this.hitbox[2] < hpos2[0]))) {
+        if (!(hpos1[1] > hpos2[1] + ent.hitbox[3] || (hpos1[1] + this.hitbox[3] < hpos2[1]))) {
+            if (ent instanceof Mario.Player) {
+                // Check if Mario's feet are above the enemy's head
+                var marioFeet = ent.pos[1] + ent.hitbox[3];
+                var enemyHead = this.pos[1];
+                
+                if (marioFeet <= enemyHead + 8 && ent.vel[1] > 0) {
+                    this.stomp();
+                } else if (ent.starTime) {
+                    this.bump();
+                } else {
+                    ent.damage();
+                }
+            } else {
+                this.collideWall();
+            }
         }
-      }
     }
   };
 
   Goomba.prototype.stomp = function() {
-    sounds.stomp.play();
-    player.bounce = true;
-    this.sprite.pos[0] = 32;
-    this.sprite.speed = 0;
+    this.dead = true;
     this.vel[0] = 0;
+    player.bounce = true;
+    sounds.stomp.play();
+    player.defeatEnemy('goomba');
     this.dying = 10;
   };
 

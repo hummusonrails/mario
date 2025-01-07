@@ -10,10 +10,9 @@ var requestAnimFrame = (function () {
     function (callback) {
       window.setTimeout(callback, 1000 / 60);
     }
-  );
+  // );
 })();
 
-// Game state variables
 var canvas, ctx, player, level, sounds, music, updateables, fireballs;
 var vX = 0,
   vY = 0,
@@ -22,8 +21,14 @@ var vX = 0,
 var gameTime = 0;
 var playerId; // Player ID for backend integration
 var previousScore = 0;
+var gameTimer = 90; // 90 seconds
+var timerDisplay = null;
+var timerInterval = null;
+var lastUpdateTime = 0;
+const UPDATE_INTERVAL = 1000; // Update every 1 second
 
 // Create canvas
+
 function createCanvas() {
   canvas = document.createElement("canvas");
   ctx = canvas.getContext("2d");
@@ -40,8 +45,29 @@ function initializeGame() {
   updateables = [];
   fireballs = [];
   player = new Mario.Player([0, 0]);
+  
+  // Initialize player stats
+  player.coins = 0;  // Regular coin counter
+  player.coinsCollected = 0;  // Tracking counter
+  player.fireballsShot = 0;
+  player.enemiesDefeated = 0;
+  player.reachedFlag = false;
+  player.flagPoleHeight = 0;
+  
   level = null;
   gameTime = 0;
+  gameTimer = 90; // Reset timer
+  
+  // Clear any existing timer
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+  if (timerDisplay) {
+    timerDisplay.remove();
+  }
+  
+  // Start new timer
+  startGameTimer();
 
   // Load resources
   resources.load([
@@ -112,20 +138,111 @@ function showSignInForm() {
 
 // Send game updates to backend server
 async function sendGameplayUpdate(state) {
+  const now = Date.now();
+  if (now - lastUpdateTime < UPDATE_INTERVAL) {
+    return;
+  }
+  lastUpdateTime = now;
+
+  console.log('🪙 PERIODIC UPDATE Stats:', {
+    coins: player.coins,
+    coinsCollected: player.coinsCollected,
+    state: state
+  });
+
   try {
+    const gameState = {
+      timestamp: new Date().toISOString(),
+      state: {
+        ...state,
+        playerStats: {
+          coinsCollected: player.coinsCollected || 0,
+          fireballsShot: player.fireballsShot || 0,
+          enemiesDefeated: player.enemiesDefeated || 0,
+          reachedFlag: player.reachedFlag || false,
+          flagPoleHeight: player.flagPoleHeight || 0
+        },
+        progress: {
+          scrollX: vX,
+          time: gameTime
+        }
+      }
+    };
+
+    console.log('🪙 NETWORK: Sending request to server:', {
+      url: `${BACKEND_URL}/api/players/${playerId}`,
+      method: 'PUT',
+      playerStats: gameState.state.playerStats,
+      fullBody: { gameplayState: gameState }
+    });
+
     const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gameplayState: state }),
+      body: JSON.stringify({ gameplayState: gameState }),
     });
 
-    if (!response.ok) throw new Error("Failed to update gameplay state");
+    if (!response.ok) {
+      console.error('🪙 NETWORK ERROR:', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      throw new Error("Failed to update gameplay state");
+    }
 
-    const data = await response.json();
-    console.log("Gameplay state updated:", data);
+    const responseData = await response.json();
+    console.log('🪙 NETWORK: Server response:', responseData);
+
   } catch (error) {
-    console.error("Error:", error);
+    console.error("🪙 NETWORK ERROR:", error);
   }
+}
+
+// Add this new function for immediate updates
+async function sendImmediateGameplayUpdate(state) {
+    try {
+        // Ensure player stats are properly initialized
+        if (!player.coinsCollected) player.coinsCollected = 0;
+        if (!player.coins) player.coins = 0;
+
+        const gameState = {
+            timestamp: new Date().toISOString(),
+            state: {
+                ...state,
+                playerStats: {
+                    coinsCollected: parseInt(player.coinsCollected) || 0,
+                    coins: parseInt(player.coins) || 0,
+                    fireballsShot: player.fireballsShot || 0,
+                    enemiesDefeated: player.enemiesDefeated || 0,
+                    reachedFlag: player.reachedFlag || false,
+                    flagPoleHeight: player.flagPoleHeight || 0
+                }
+            }
+        };
+
+        console.log('🪙 IMMEDIATE UPDATE:', {
+            playerStats: gameState.state.playerStats,
+            rawValues: {
+                coins: player.coins,
+                coinsCollected: player.coinsCollected
+            }
+        });
+
+        const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ gameplayState: gameState }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update gameplay state");
+        }
+
+        const responseData = await response.json();
+        console.log('🪙 Server Response:', responseData);
+    } catch (error) {
+        console.error("🪙 Update Error:", error);
+    }
 }
 
 // Initialize level and start gameplay
@@ -288,14 +405,31 @@ function main() {
 
 // Update the game state
 function update(dt) {
+  console.log('Active items:', level.items.length);  // Debug log
+  
   gameTime += dt;
   handleInput(dt);
   updateEntities(dt, gameTime);
   checkCollisions();
+
+  // Update all game entities
+  level.items.forEach(function(item) {
+    if (item) {  // Check if item exists
+      // console.log('Updating item:', item);  // Debug log
+      item.update(dt);
+      item.checkCollisions();
+    }
+  });
 }
 
 // Reset game back to sign-in screen
 function resetToSignIn() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+  if (timerDisplay) {
+    timerDisplay.remove();
+  }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   canvas.style.display = "none";
   showSignInForm();
@@ -304,6 +438,38 @@ function resetToSignIn() {
 // Add a mechanism to reset game when a level ends
 function onGameEnd() {
   setTimeout(resetToSignIn, 2000);
+}
+
+function createTimer() {
+  timerDisplay = document.createElement('div');
+  timerDisplay.className = 'timer';
+  timerDisplay.textContent = gameTimer + 's';
+  document.body.appendChild(timerDisplay);
+}
+
+function startGameTimer() {
+  createTimer();
+  timerInterval = setInterval(() => {
+    gameTimer--;
+    timerDisplay.textContent = gameTimer + 's';
+    
+    if (gameTimer <= 0) {
+      clearInterval(timerInterval);
+      endGame();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  // Pause all game music and sounds
+  music.overworld.pause();
+  music.underground.pause();
+  
+  // Show game over popup
+  setTimeout(() => {
+    alert('Time\'s up! Game Over!');
+    window.location.reload();
+  }, 100);
 }
 
 // Initialize the app

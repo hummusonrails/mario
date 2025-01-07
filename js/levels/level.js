@@ -103,10 +103,24 @@
   };
 
   Level.prototype.putCoin = function(x, y) {
-    this.items.push(new Mario.Coin(
-      [x*16, y*16],
-      this.coinSprite()
-    ));
+    console.log('🪙 Attempting to place coin at:', x, y);
+    
+    const coin = new Mario.Coin(
+        [x*16, y*16],
+        this.coinSprite()
+    );
+    
+    // Add to both items and updateables arrays
+    this.items.push(coin);
+    if (typeof updateables !== 'undefined') {
+        updateables.push(coin);
+    }
+    
+    console.log('🪙 Coin placed:', {
+        position: [x*16, y*16],
+        itemsLength: this.items.length,
+        updateablesLength: updateables ? updateables.length : 0
+    });
   };
 
   Level.prototype.putCloud = function(x, y) {

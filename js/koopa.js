@@ -138,63 +138,53 @@
       return;
     }
 
-    //the first two elements of the hitbox array are an offset, so let's do this now.
     var hpos1 = [this.pos[0] + this.hitbox[0], this.pos[1] + this.hitbox[1]];
     var hpos2 = [ent.pos[0] + ent.hitbox[0], ent.pos[1] + ent.hitbox[1]];
 
-    //if the hitboxes actually overlap
-    if (!(hpos1[0] > hpos2[0]+ent.hitbox[2] || (hpos1[0]+this.hitbox[2] < hpos2[0]))) {
-      if (!(hpos1[1] > hpos2[1]+ent.hitbox[3] || (hpos1[1]+this.hitbox[3] < hpos2[1]))) {
+    if (!(hpos1[0] > hpos2[0] + ent.hitbox[2] || (hpos1[0] + this.hitbox[2] < hpos2[0]))) {
+      if (!(hpos1[1] > hpos2[1] + ent.hitbox[3] || (hpos1[1] + this.hitbox[3] < hpos2[1]))) {
         if (ent instanceof Mario.Player) {
-          if (ent.vel[1] > 0) {
+          // Check if Mario's feet are above the enemy's head
+          var marioFeet = ent.pos[1] + ent.hitbox[3];
+          var enemyHead = this.pos[1];
+          
+          if (marioFeet <= enemyHead + 8 && ent.vel[1] > 0) {
             player.bounce = true;
-          }
-          if (this.shell) {
-            sounds.kick.play();
-            if (this.vel[0] === 0) {
-              if (ent.left) { //I'm pretty sure this isn't the real logic.
-                this.vel[0] = -4;
+            if (this.shell) {
+              sounds.kick.play();
+              if (this.vel[0] === 0) {
+                this.vel[0] = ent.left ? -4 : 4;
               } else {
-                this.vel[0] = 4;
+                this.vel[0] = 0;
               }
             } else {
-              if (ent.bounce) {
-                this.vel[0] = 0;
-              } else ent.damage();
+              this.stomp();
+              ent.defeatEnemy('koopa'); // Call player's defeatEnemy method
             }
-          } else if (ent.vel[1] > 0) { //then we get BOPPED.
-            this.stomp();
-          } else { //or the player gets hit
+          } else if (this.shell && this.vel[0] !== 0) {
+            ent.damage();
+          } else if (ent.starTime) {
+            this.bump();
+          } else {
             ent.damage();
           }
         } else {
           if (this.shell && (ent instanceof Mario.Goomba)) {
             ent.bump();
-          } else this.collideWall();
+          } else {
+            this.collideWall();
+          }
         }
       }
     }
   };
 
   Koopa.prototype.stomp = function() {
-    //Turn this thing into a shell if it isn't already. Kick it if it is.
+    this.dead = true;
+    this.vel[0] = 0;
     player.bounce = true;
-    if (this.para) {
-      this.para = false;
-      this.sprite.pos[0] -= 32;
-    } else {
-      sounds.stomp.play();
-      this.shell = 360;
-      this.sprite.pos[0] += 64;
-      this.sprite.pos[1] += 16;
-      this.sprite.size = [16,16];
-      this.hitbox = [2,0,12,16];
-      this.sprite.speed = 0;
-      this.frames = [0,1];
-      this.vel = [0,0];
-      this.pos[1] += 16;
-    }
-
+    sounds.stomp.play();
+    this.dying = 10;
   };
 
   Koopa.prototype.bump = function() {

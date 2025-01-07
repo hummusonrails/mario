@@ -3,10 +3,17 @@
 		window.Mario = {};
 
 	var Player = Mario.Player = function(pos) {
+		// Initialize tracking variables first
+		this.coinsCollected = 0;  // Make sure this is set before anything else
+		this.coins = 0;
+		this.fireballsShot = 0;
+		this.enemiesDefeated = 0;
+		this.reachedFlag = false;
+		this.flagPoleHeight = 0;
+
 		//I know, I know, there are a lot of variables tracking Mario's state.
 		//Maybe these can be consolidated some way? We'll see once they're all in.
 		this.power = 0;
-		this.coins = 0;
 		this.powering = [];
 		this.bounce = false;
 		this.jumping = 0;
@@ -20,9 +27,10 @@
 
 		Mario.Entity.call(this, {
 			pos: pos,
-			sprite: new Mario.Sprite('sprites/player.png', [80,32],[16,16],0),
+			sprite: new Mario.Sprite('sprites/player.png', [80,32], [16,16], 0),
 			hitbox: [0,0,16,16]
 		});
+		this.sprite.size = [16,16];  // Explicitly set initial sprite size
 	};
 
 	Mario.Util.inherits(Player, Mario.Entity);
@@ -38,7 +46,8 @@
 	Player.prototype.shoot = function() {
 		if (this.fireballs >= 2) return; //Projectile limit!
 		this.fireballs += 1;
-		var fb = new Mario.Fireball([this.pos[0]+8,this.pos[1]]); //I hate you, Javascript.
+		this.fireballsShot += 1; // Track total fireballs shot
+		var fb = new Mario.Fireball([this.pos[0]+8,this.pos[1]]);
 		fb.spawn(this.left);
 		this.shooting = 2;
 	}
@@ -131,7 +140,7 @@
 		}
 	};
 
-  Player.prototype.setAnimation = function() {
+	Player.prototype.setAnimation = function() {
 		if (this.dying) return;
 
 		if (this.starTime) {
@@ -202,132 +211,132 @@
 		}
   };
 
-	Player.prototype.update = function(dt, vX) {
-		if (this.powering.length !== 0) {
-			var next = this.powering.shift();
-			if (next == 5) return;
-			this.sprite.pos = this.powerSprites[next];
-			this.sprite.size = this.powerSizes[next];
-			this.pos[1] += this.shift[next];
-			if (this.powering.length === 0) {
-				delete level.items[this.touchedItem];
+  Player.prototype.update = function(dt, vX) {
+	if (this.powering.length !== 0) {
+		var next = this.powering.shift();
+		if (next == 5) return;
+		this.sprite.pos = this.powerSprites[next];
+		this.sprite.size = this.powerSizes[next];
+		this.pos[1] += this.shift[next];
+		if (this.powering.length === 0) {
+			delete level.items[this.touchedItem];
+		}
+		return;
+	}
+
+	if (this.invincibility) {
+		this.invincibility -= Math.round(dt * 60);
+	}
+
+	if (this.waiting) {
+		this.waiting -= dt;
+		if (this.waiting <= 0) {
+			this.waiting = 0;
+		} else return;
+	}
+
+	if (this.bounce) {
+		this.bounce = false;
+		this.standing = false;
+		this.vel[1] = -3;
+	}
+
+	if (this.pos[0] <= vX) {
+		this.pos[0] = vX;
+		this.vel[0] = Math.max(this.vel[0], 0);
+	}
+
+	if (Math.abs(this.vel[0]) > this.maxSpeed) {
+		this.vel[0] -= 0.05 *  this.vel[0] / Math.abs(this.vel[0]);
+		this.acc[0] = 0;
+	}
+
+	if (this.dying){
+		if (this.pos[1] < this.targetPos[1]) {
+			this.vel[1] = 1;
+		}
+		this.dying -= 1 * dt;
+		if (this.dying <= 0) {
+			player = new Mario.Player(level.playerPos);
+			level.loader.call();
+			input.reset();
+		}
+	}
+	else {
+		this.acc[1] = 0.25
+		if (this.pos[1] > 240) {
+			this.die();
+		}
+	}
+
+	if (this.piping) {
+		this.acc = [0,0];
+		var pos = [Math.round(this.pos[0]), Math.round(this.pos[1])]
+		if (pos[0] === this.targetPos[0] && pos[1] === this.targetPos[1]) {
+			this.piping = false;
+			this.pipeLoc.call();
+		}
+	}
+
+	if (this.flagging) {
+		this.acc = [0,0];
+	}
+
+	if (this.exiting) {
+		this.left = false;
+		this.flagging = false;
+		this.vel[0] = 1.5;
+		if (this.pos[0] >= this.targetPos[0]) {
+			this.sprite.size = [0,0];
+			this.vel = [0,0];
+			window.setTimeout(function() {
+				player.sprite.size = player.power===0 ? [16,16] : [16,32];
+				player.exiting = false;
+				player.noInput = false;
+				level.loader();
+				if (player.power !== 0) player.pos[1] -= 16;
+				music.overworld.currentTime = 0;
+			}, 5000);
+		}
+	}
+
+	//approximate acceleration
+	this.vel[0] += this.acc[0];
+	this.vel[1] += this.acc[1];
+	this.pos[0] += this.vel[0];
+	this.pos[1] += this.vel[1];
+
+this.setAnimation();
+	this.sprite.update(dt);
+};
+
+Player.prototype.checkCollisions = function() {
+	if (this.piping || this.dying) return;
+	//x-axis first!
+	var h = this.power > 0 ? 2 : 1;
+	var w = 1;
+	if (this.pos[1] % 16 !== 0) {
+		h += 1;
+	}
+	if (this.pos[0] % 16 !== 0) {
+		w += 1;
+	}
+	var baseX = Math.floor(this.pos[0] / 16);
+	var baseY = Math.floor(this.pos[1] / 16);
+
+	for (var i = 0; i < h; i++) {
+		if (baseY + i < 0 || baseY + i >= 15) continue;
+		for (var j = 0; j < w; j++) {
+			if (baseY < 0) { i++;}
+			if (level.statics[baseY + i][baseX + j]) {
+				level.statics[baseY + i][baseX + j].isCollideWith(this);
 			}
-			return;
-		}
-
-		if (this.invincibility) {
-			this.invincibility -= Math.round(dt * 60);
-		}
-
-		if (this.waiting) {
-			this.waiting -= dt;
-			if (this.waiting <= 0) {
-				this.waiting = 0;
-			} else return;
-		}
-
-		if (this.bounce) {
-			this.bounce = false;
-			this.standing = false;
-			this.vel[1] = -3;
-		}
-
-		if (this.pos[0] <= vX) {
-			this.pos[0] = vX;
-			this.vel[0] = Math.max(this.vel[0], 0);
-		}
-
-		if (Math.abs(this.vel[0]) > this.maxSpeed) {
-			this.vel[0] -= 0.05 *  this.vel[0] / Math.abs(this.vel[0]);
-			this.acc[0] = 0;
-		}
-
-		if (this.dying){
-			if (this.pos[1] < this.targetPos[1]) {
-				this.vel[1] = 1;
-			}
-			this.dying -= 1 * dt;
-			if (this.dying <= 0) {
-				player = new Mario.Player(level.playerPos);
-				level.loader.call();
-				input.reset();
+			if (level.blocks[baseY + i][baseX + j]) {
+				level.blocks[baseY + i][baseX + j].isCollideWith(this);
 			}
 		}
-		else {
-			this.acc[1] = 0.25
-			if (this.pos[1] > 240) {
-				this.die();
-			}
-		}
-
-		if (this.piping) {
-			this.acc = [0,0];
-			var pos = [Math.round(this.pos[0]), Math.round(this.pos[1])]
-			if (pos[0] === this.targetPos[0] && pos[1] === this.targetPos[1]) {
-				this.piping = false;
-				this.pipeLoc.call();
-			}
-		}
-
-		if (this.flagging) {
-			this.acc = [0,0];
-		}
-
-		if (this.exiting) {
-			this.left = false;
-			this.flagging = false;
-			this.vel[0] = 1.5;
-			if (this.pos[0] >= this.targetPos[0]) {
-				this.sprite.size = [0,0];
-				this.vel = [0,0];
-				window.setTimeout(function() {
-					player.sprite.size = player.power===0 ? [16,16] : [16,32];
-					player.exiting = false;
-					player.noInput = false;
-					level.loader();
-					if (player.power !== 0) player.pos[1] -= 16;
-					music.overworld.currentTime = 0;
-				}, 5000);
-			}
-		}
-
-		//approximate acceleration
-		this.vel[0] += this.acc[0];
-		this.vel[1] += this.acc[1];
-		this.pos[0] += this.vel[0];
-		this.pos[1] += this.vel[1];
-
-    this.setAnimation();
-		this.sprite.update(dt);
-	};
-
-	Player.prototype.checkCollisions = function() {
-		if (this.piping || this.dying) return;
-		//x-axis first!
-		var h = this.power > 0 ? 2 : 1;
-		var w = 1;
-		if (this.pos[1] % 16 !== 0) {
-			h += 1;
-		}
-		if (this.pos[0] % 16 !== 0) {
-			w += 1;
-		}
-		var baseX = Math.floor(this.pos[0] / 16);
-		var baseY = Math.floor(this.pos[1] / 16);
-
-		for (var i = 0; i < h; i++) {
-			if (baseY + i < 0 || baseY + i >= 15) continue;
-			for (var j = 0; j < w; j++) {
-				if (baseY < 0) { i++;}
-				if (level.statics[baseY + i][baseX + j]) {
-					level.statics[baseY + i][baseX + j].isCollideWith(this);
-				}
-				if (level.blocks[baseY + i][baseX + j]) {
-					level.blocks[baseY + i][baseX + j].isCollideWith(this);
-				}
-			}
-		}
-	};
+	}
+};
 
 	Player.prototype.powerUp = function(idx) {
 		sounds.powerup.play();
@@ -433,6 +442,12 @@
 		this.flagging = true;
 		this.vel = [0, 2];
 		this.acc = [0, 0];
+		this.reachedFlag = true;
+		this.flagPoleHeight = 240 - this.pos[1]; // Calculate height reached
+		sendGameplayUpdate({
+			action: 'flagReached',
+			flagPoleHeight: this.flagPoleHeight
+		});
 	}
 
 	Player.prototype.exit = function() {
@@ -442,5 +457,43 @@
 		this.setAnimation();
 		this.waiting = 1;
 		this.exiting = true;
+	}
+
+	Player.prototype.defeatEnemy = function(enemyType) {
+		this.enemiesDefeated += 1;
+		sendGameplayUpdate({
+			action: 'enemyDefeat',
+			enemyType: enemyType
+		});
+	}
+
+	Player.prototype.collectCoin = function() {
+		console.log('🪙 Before collection:', {
+			coins: this.coins,
+			coinsCollected: this.coinsCollected
+		});
+		
+		// Initialize if undefined
+		if (typeof this.coins === 'undefined') this.coins = 0;
+		if (typeof this.coinsCollected === 'undefined') this.coinsCollected = 0;
+		
+		this.coins++;
+		this.coinsCollected++;
+		
+		console.log('💰 After collection:', {
+			coins: this.coins,
+			coinsCollected: this.coinsCollected
+		});
+		
+		sounds.coin.play();
+		
+		// Send immediate update
+		sendGameplayUpdate({
+			action: 'coinCollect',
+			playerStats: {
+				coinsCollected: this.coinsCollected,
+				coins: this.coins
+			}
+		});
 	}
 })();
