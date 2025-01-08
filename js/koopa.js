@@ -144,47 +144,49 @@
     if (!(hpos1[0] > hpos2[0] + ent.hitbox[2] || (hpos1[0] + this.hitbox[2] < hpos2[0]))) {
       if (!(hpos1[1] > hpos2[1] + ent.hitbox[3] || (hpos1[1] + this.hitbox[3] < hpos2[1]))) {
         if (ent instanceof Mario.Player) {
-          // Check if Mario's feet are above the enemy's head
-          var marioFeet = ent.pos[1] + ent.hitbox[3];
-          var enemyHead = this.pos[1];
-          
-          if (marioFeet <= enemyHead + 8 && ent.vel[1] > 0) {
-            player.bounce = true;
-            if (this.shell) {
-              sounds.kick.play();
-              if (this.vel[0] === 0) {
-                this.vel[0] = ent.left ? -4 : 4;
-              } else {
-                this.vel[0] = 0;
-              }
+          // Check if Mario is above the Koopa and moving downward
+          if (ent.vel[1] > 0 && ent.pos[1] + ent.hitbox[1] < this.pos[1]) {
+            // Proper stomping behavior
+            this.stomp();
+            ent.bounce = true;
+            if (ent.defeatEnemy) ent.defeatEnemy('koopa');
+          } else if (this.shell) {
+            // Shell behavior
+            sounds.kick.play();
+            if (this.vel[0] === 0) {
+              this.vel[0] = ent.left ? -4 : 4;
             } else {
-              this.stomp();
-              ent.defeatEnemy('koopa'); // Call player's defeatEnemy method
+              this.vel[0] = 0;
             }
-          } else if (this.shell && this.vel[0] !== 0) {
-            ent.damage();
-          } else if (ent.starTime) {
-            this.bump();
           } else {
+            // Regular collision - damage player
             ent.damage();
           }
+        } else if (this.shell && (ent instanceof Mario.Goomba)) {
+          ent.bump();
         } else {
-          if (this.shell && (ent instanceof Mario.Goomba)) {
-            ent.bump();
-          } else {
-            this.collideWall();
-          }
+          this.collideWall();
         }
       }
     }
   };
 
   Koopa.prototype.stomp = function() {
-    this.dead = true;
-    this.vel[0] = 0;
-    player.bounce = true;
-    sounds.stomp.play();
-    this.dying = 10;
+    if (this.para) {
+      this.para = false;
+      this.sprite.pos[0] -= 32;
+    } else {
+      sounds.stomp.play();
+      this.shell = 360;
+      this.sprite.pos[0] += 64;
+      this.sprite.pos[1] += 16;
+      this.sprite.size = [16,16];
+      this.hitbox = [2,0,12,16];
+      this.sprite.speed = 0;
+      this.frames = [0,1];
+      this.vel = [0,0];
+      this.pos[1] += 16;
+    }
   };
 
   Koopa.prototype.bump = function() {
