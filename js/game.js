@@ -10,7 +10,7 @@ var requestAnimFrame = (function () {
     function (callback) {
       window.setTimeout(callback, 1000 / 60);
     }
-  // );
+  );
 })();
 
 var canvas, ctx, player, level, sounds, music, updateables, fireballs;
@@ -25,7 +25,7 @@ var gameTimer = 90; // 90 seconds
 var timerDisplay = null;
 var timerInterval = null;
 var lastUpdateTime = 0;
-const UPDATE_INTERVAL = 1000; // Update every 1 second
+let UPDATE_INTERVAL = 1000; // Update every 1 second
 
 // Create canvas
 
@@ -136,19 +136,17 @@ function showSignInForm() {
   });
 }
 
-// Send game updates to backend server
+// Throttle network updates
+UPDATE_INTERVAL = 1000; // Update every 1 second
+lastUpdateTime = 0;
+
+// Modify sendGameplayUpdate to be throttled
 async function sendGameplayUpdate(state) {
   const now = Date.now();
   if (now - lastUpdateTime < UPDATE_INTERVAL) {
-    return;
+    return; // Skip update if not enough time has passed
   }
   lastUpdateTime = now;
-
-  console.log('🪙 PERIODIC UPDATE Stats:', {
-    coins: player.coins,
-    coinsCollected: player.coinsCollected,
-    state: state
-  });
 
   try {
     const gameState = {
@@ -161,40 +159,19 @@ async function sendGameplayUpdate(state) {
           enemiesDefeated: player.enemiesDefeated || 0,
           reachedFlag: player.reachedFlag || false,
           flagPoleHeight: player.flagPoleHeight || 0
-        },
-        progress: {
-          scrollX: vX,
-          time: gameTime
         }
       }
     };
 
-    console.log('🪙 NETWORK: Sending request to server:', {
-      url: `${BACKEND_URL}/api/players/${playerId}`,
-      method: 'PUT',
-      playerStats: gameState.state.playerStats,
-      fullBody: { gameplayState: gameState }
-    });
-
-    const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
+    // Use non-blocking fetch
+    fetch(`${BACKEND_URL}/api/players/${playerId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gameplayState: gameState }),
-    });
-
-    if (!response.ok) {
-      console.error('🪙 NETWORK ERROR:', {
-        status: response.status,
-        statusText: response.statusText
-      });
-      throw new Error("Failed to update gameplay state");
-    }
-
-    const responseData = await response.json();
-    console.log('🪙 NETWORK: Server response:', responseData);
+    }).catch(error => console.error("🪙 NETWORK ERROR:", error));
 
   } catch (error) {
-    console.error("🪙 NETWORK ERROR:", error);
+    console.error("🪙 Update Error:", error);
   }
 }
 
@@ -314,8 +291,8 @@ function handleInput(dt) {
 // Updates all entities in the game
 function updateEntities(dt, gameTime) {
   player.update(dt, vX);
-
   updateables.forEach((ent) => ent.update(dt, gameTime));
+  
   if (player.exiting) {
     if (player.pos[0] > vX + 96) vX = player.pos[0] - 96;
   } else if (level.scrolling && player.pos[0] > vX + 80) {
@@ -329,20 +306,13 @@ function updateEntities(dt, gameTime) {
   fireballs.forEach((fireball) => fireball.update(dt));
   level.pipes.forEach((pipe) => pipe.update(dt));
 
-  // Send gameplay state to the server
-  const gameplayState = {
+  // Only send updates periodically
+  sendGameplayUpdate({
     position: player.pos,
     velocity: player.vel,
     lives: player.lives,
-    score: player.score,
-    progress: { scrollX: vX, time: gameTime },
-  };
-  sendGameplayUpdate(gameplayState);
-
-  if (player.score !== previousScore) {
-    sendGameplayUpdate({ score: player.score });
-    previousScore = player.score;
-  }
+    score: player.score
+  });
 }
 
 // Checks collisions for all game entities
@@ -405,21 +375,10 @@ function main() {
 
 // Update the game state
 function update(dt) {
-  console.log('Active items:', level.items.length);  // Debug log
-  
   gameTime += dt;
   handleInput(dt);
   updateEntities(dt, gameTime);
   checkCollisions();
-
-  // Update all game entities
-  level.items.forEach(function(item) {
-    if (item) {  // Check if item exists
-      // console.log('Updating item:', item);  // Debug log
-      item.update(dt);
-      item.checkCollisions();
-    }
-  });
 }
 
 // Reset game back to sign-in screen
