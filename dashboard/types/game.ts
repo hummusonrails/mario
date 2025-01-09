@@ -32,6 +32,8 @@ export interface PlayerStats {
   export interface PlayerData {
     name: string
     email: string
+    company: string
+    job_title: string
     consent: boolean
     gameplay: {
       startTime: string

@@ -33,6 +33,14 @@ COUCHBASE_BUCKET=
 
 The frontend leaderboard is built with React and is found in the `/dashboard` directory. The leaderboard displays the players in order of who is winning. It also shows the data from the game in JSON format on the right-hand side of the browser window. 
 
+You need to provide the URL to the backend Node server in the `.env` file located in the root directory of `/dashboard`. There is an `.env.sample` file inside `/dashboard` to show you what the `.env` file should look like:
+
+```bash
+VITE_BACKEND_URL=
+```
+
+Once you have filled in the `.env` file, you can start the leaderboard.
+
 To start the leaderboard, navigate to the `/dashboard` directory and run `npm run dev`. This will start the server on `localhost:5173`.
 
 Navigate in a browser window to [http://localhost:5173](http://localhost:5173) to see the leaderboard.

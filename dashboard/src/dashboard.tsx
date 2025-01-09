@@ -1,182 +1,207 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star } from 'lucide-react'
-import { PlayerData } from "./types/game"
-import { Terminal } from "../components/terminal"
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star } from 'lucide-react';
+import { PlayerData } from "../types/game";
+import { Terminal } from "../components/terminal";
 
-// In a real app, this would come from your API
-const BACKEND_URL = "http://localhost:3000"
+// const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function Dashboard() {
-  const [players, setPlayers] = useState<PlayerData[]>([])
+  const [players, setPlayers] = useState<PlayerData[]>([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/players/all`)
-        const data = await response.json()
-        setPlayers(data)
-      } catch (error) {
-        console.error("Error fetching players:", error)
+        setError(false);
+        const response = await fetch(`${BACKEND_URL}/api/players/all`);
+        const data = await response.json();
+        console.log("Fetched players:", data);
+        setPlayers(data);
+      } catch (err) {
+        console.error("Error fetching players:", error);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    fetchPlayers()
-  }, [])
+    fetchPlayers();
+    const interval = setInterval(fetchPlayers, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const leaderboardData = useMemo(() => {
+    return players
+      .sort((a, b) => {
+        const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats || {};
+        const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats || {};
+        const aScore = (aStats.coinsCollected || 0) * 100 + (aStats.enemiesDefeated || 0) * 500;
+        const bScore = (bStats.coinsCollected || 0) * 100 + (bStats.enemiesDefeated || 0) * 500;
+        return bScore - aScore;
+      })
+      .map((player, index) => ({
+        ...player,
+        rank: index + 1,
+      }));
+  }, [players]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="spinner border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-    {/* Full-width Header */}
-    <header className="sticky top-0 z-10 border-b bg-white shadow-sm w-full">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <img
-          src="./couchbase.svg"
-          alt="Couchbase Logo"
-          width={150}
-          height={40}
-        />
-        <div className="flex items-center gap-2">
+      {/* Full-width Header */}
+      <header className="sticky top-0 z-10 border-b bg-white shadow-sm w-full">
+        <div className="container flex h-16 items-center justify-between px-4">
           <img
-            src="./mario-coin.webp"
-            alt="Mario Coin"
-            width={30}
-            height={30}
-            className="animate-bounce"
+            src="./couchbase.svg"
+            alt="Couchbase Logo"
+            width={150}
+            height={40}
           />
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
-            Super Mario Tournament
-          </h1>
-          <img
-            src="./mario-coin.webp"
-            alt="Mario Coin"
-            width={30}
-            height={30}
-            className="animate-bounce"
-          />
-        </div>
-      </div>
-    </header>
-
-    {/* Split Content Area */}
-    <div className="flex flex-1">
-      {/* Main Dashboard Section - 75% width */}
-      <div className="w-3/4 overflow-auto">
-        <main className="container mx-auto px-4 py-8">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-yellow-700 text-sm font-medium">Total Coins</CardTitle>
-                <Coin className="h-4 w-4 text-yellow-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-yellow-700">
-                  {players.reduce((sum, player) => {
-                    const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                    return sum + (stats?.coinsCollected || 0)
-                  }, 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-red-700 text-sm font-medium">Total Fireballs</CardTitle>
-                <Flame className="h-4 w-4 text-red-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-700">
-                  {players.reduce((sum, player) => {
-                    const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                    return sum + (stats?.fireballsShot || 0)
-                  }, 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-purple-700 text-sm font-medium">Enemies Defeated</CardTitle>
-                <Sword className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-purple-700">
-                  {players.reduce((sum, player) => {
-                    const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                    return sum + (stats?.enemiesDefeated || 0)
-                  }, 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-green-700 text-sm font-medium">Flags Reached</CardTitle>
-                <Flag className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-700">
-                  {players.reduce((sum, player) => {
-                    const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                    return sum + (stats?.flagPoleHeight ? 1 : 0)
-                  }, 0)}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex items-center gap-2">
+            <img
+              src="./mario-coin.webp"
+              alt="Mario Coin"
+              width={30}
+              height={30}
+              className="animate-bounce"
+            />
+            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
+              Super Mario Tournament
+            </h1>
+            <img
+              src="./mario-coin.webp"
+              alt="Mario Coin"
+              width={30}
+              height={30}
+              className="animate-bounce"
+            />
           </div>
+        </div>
+      </header>
 
-          {/* Leaderboard */}
-          <Card className="overflow-hidden">
-            <CardHeader className="border-b bg-gradient-to-br from-gray-50 to-gray-100">
-              <div className="flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-500" />
-                <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-red-600">
-                  Tournament Leaderboard
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="relative">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Rank</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Player</th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                        <Coin className="h-4 w-4 inline mr-1" />
-                        Coins
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                        <Flame className="h-4 w-4 inline mr-1" />
-                        Fireballs
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                        <Sword className="h-4 w-4 inline mr-1" />
-                        Enemies
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                        <Flag className="h-4 w-4 inline mr-1" />
-                        Flag Height
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                        <Star className="h-4 w-4 inline mr-1" />
-                        Score
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {players
-                      .sort((a, b) => {
-                        const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats
-                        const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats
-                        const aScore = (aStats?.coinsCollected || 0) * 100 + (aStats?.enemiesDefeated || 0) * 500
-                        const bScore = (bStats?.coinsCollected || 0) * 100 + (bStats?.enemiesDefeated || 0) * 500
-                        return bScore - aScore
-                      })
-                      .map((player, index) => {
-                        const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+      {/* Split Content Area */}
+      <div className="flex flex-1">
+        {/* Main Dashboard Section - 75% width */}
+        <div className="w-3/4 overflow-auto">
+          <main className="container mx-auto px-4 py-8">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-yellow-700 text-sm font-medium">Total Coins</CardTitle>
+                  <Coin className="h-4 w-4 text-yellow-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-yellow-700">
+                    {players.reduce((sum, player) => {
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
+                      return sum + (stats?.coinsCollected || 0);
+                    }, 0)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-red-700 text-sm font-medium">Total Fireballs</CardTitle>
+                  <Flame className="h-4 w-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-700">
+                    {players.reduce((sum, player) => {
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
+                      return sum + (stats?.fireballsShot || 0);
+                    }, 0)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-purple-700 text-sm font-medium">Enemies Defeated</CardTitle>
+                  <Sword className="h-4 w-4 text-purple-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-700">
+                    {players.reduce((sum, player) => {
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
+                      return sum + (stats?.enemiesDefeated || 0);
+                    }, 0)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-green-700 text-sm font-medium">Flags Reached</CardTitle>
+                  <Flag className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-700">
+                    {players.reduce((sum, player) => {
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
+                      return sum + (stats?.flagPoleHeight ? 1 : 0);
+                    }, 0)}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Leaderboard */}
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-500" />
+                  <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-red-600">
+                    Tournament Leaderboard
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="relative">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-gray-50">
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Rank</th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Player</th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                          <Coin className="h-4 w-4 inline mr-1" />
+                          Coins
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                          <Flame className="h-4 w-4 inline mr-1" />
+                          Fireballs
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                          <Sword className="h-4 w-4 inline mr-1" />
+                          Enemies
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                          <Flag className="h-4 w-4 inline mr-1" />
+                          Flag Height
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                          <Star className="h-4 w-4 inline mr-1" />
+                          Score
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaderboardData.map((player) => {
+                        const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
                         const score = (stats?.coinsCollected || 0) * 100 + (stats?.enemiesDefeated || 0) * 500 + (stats?.flagPoleHeight || 0) * 1000;
 
                         return (
@@ -188,12 +213,12 @@ export default function Dashboard() {
                               <div className="flex items-center gap-2">
                                 <div className={`
                                   w-8 h-8 rounded-full flex items-center justify-center font-bold
-                                  ${index === 0 ? 'bg-yellow-100 text-yellow-700' : 
-                                    index === 1 ? 'bg-gray-100 text-gray-700' :
-                                    index === 2 ? 'bg-orange-100 text-orange-700' :
+                                  ${player.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
+                                    player.rank === 2 ? 'bg-gray-100 text-gray-700' :
+                                    player.rank === 3 ? 'bg-orange-100 text-orange-700' :
                                     'bg-gray-50 text-gray-500'}
                                 `}>
-                                  #{index + 1}
+                                  #{player.rank}
                                 </div>
                               </div>
                             </td>
@@ -221,22 +246,21 @@ export default function Dashboard() {
                               </span>
                             </td>
                           </tr>
-                        )
+                        );
                       })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
 
-      {/* Terminal Section - 25% width */}
-      <div className="w-1/4 p-4 border-l">
-        <Terminal data={players} />
+        {/* Terminal Section - 25% width */}
+        <div className="w-1/4 p-4 border-l">
+          <Terminal data={players} />
+        </div>
       </div>
     </div>
-  </div>
-  )
+  );
 }
-
