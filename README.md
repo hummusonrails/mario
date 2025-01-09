@@ -12,6 +12,8 @@ This fork of the code is designed to be run as a booth activity at an event. It 
 
 To run the Mario game, open up the [index.html](index.html) file in the root directory in a web browser. The game will start automatically.
 
+This repository is also set up to host the game automatically on GitHub Pages in the repository it is hosted in. You can find it by navigating to `https://<username>.github.io/<repository>`. Make sure to adjust the `BACKEND_URL` variable defined in `js/game.js` at the top of the file to point to the backend Node.js server.
+
 Each player is required to complete a sign-up form before playing the game. The form asks the player for their name, email, company name and job title, as well as a checkbox to consent to receiving marketing emails. Once the form has been submitted this initiates a new player JSON document in the Couchbase database.
 
 ## The Backend Server
