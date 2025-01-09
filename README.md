@@ -1,71 +1,38 @@
-
-[![Mario](http://www.garrettjohnson.net/images/fulls/mariofull.png)](http://www.garrettjohnson.net/mario)
-#Mario
 [Mario.js](www.garrettjohnson.net/mario "Mario.js") is a clone of Super Mario Bros. for the Nintendo Entertainment System, implemented in Javascript.  It implements a hand-built game engine using the HTML5 Canvas.
 
 Disclaimer: This project is for demonstration only. If you really want to play Mario, please do it on a console. The graphics, sounds, and original design of Super Mario Bros. are all owned by Nintendo.
 
-#Engine
+This fork of the code is designed to be run as a booth activity at an event. It comes in several parts:
 
-##Game Flow
-The main loop tries to render at 60fps. Each frame, we go through a few steps to update the game, and then render.
+- The Mario game itself
+- A backend Node server to send the game data to Couchbase and to the frontend
+- A frontend leaderboard built with React to display the game data
 
-First, we get the controls. Depending on what the player is pressing, we make some changes to the player object.
+## The Mario Game
 
-Then, we update each entity, and the general game state. Entities are game objects which have data about their position, movement, collision boxes, and sprite, as well as functions for updating that state, and rendering to the canvas.
+To run the Mario game, open up the [index.html](index.html) file in the root directory in a web browser. The game will start automatically.
 
-Scrolling is implemented using a viewport position that increases as Mario travels to the right. We only render or do calculations on objects that are close enough to the left edge of the screen. As in the original game, enemies become active slightly before they appear on screen.
+Each player is required to complete a sign-up form before playing the game. The form asks the player for their name, email, company name and job title, as well as a checkbox to consent to receiving marketing emails. Once the form has been submitted this initiates a new player JSON document in the Couchbase database.
 
-The update function contains all of the logic for mutating the object's state without data from other entities. Once each object has updated, we check collisions. Independent movement, such as coins popping out of blocks, or Mario grabbing the flag and running out of the stage, are controlled here.
+## The Backend Server
 
-##Collision
-For obstacles such as walls, the ground, and the various blocks, they are indexed by their position in the game, so each entity only needs to check the area around itself for collision with those.
+The Node.js server is found in `/server/server.js` and is responsible for sending the game data to Couchbase. The server is also responsible for sending the game data to the frontend leaderboard.
 
-Then, each entity iterates through the other active entities to determine collision with moving objects, calling functions to update positions and state as appropriate.
+To start the server, navigate to the `/server` directory and run `node server.js`.
 
-The player object only checks collision with terrain. Enemies and items check their collision with the player and tell it how to update.
+Make sure to fill in the `.env` file with your credentials *before* starting the server. There is an `.env.sample` file inside `/server` to show you what the `.env` file should look like:
 
-Note that collision boxes are separate from the display position of the entity's sprite. This was the case in the original game as well. Generally speaking, making the collision slightly more generous improves game feel.
+```bash
+COUCHBASE_URL=
+COUCHBASE_USERNAME=
+COUCHBASE_PASSWORD=
+COUCHBASE_BUCKET=
+```
 
-##Rendering
-Once everything is in its proper place, we call each object's render function. Since the canvas doesn't implement a z-axis, the layering effect is handled entirely by rendering the objects in this order:
+## The Frontend Leaderboard
 
-Background
-Props
-Items
-Enemies
-Projectiles
-Terrain
-Player
-Pipes
+The frontend leaderboard is built with React and is found in the `/dashboard` directory. The leaderboard displays the players in order of who is winning. It also shows the data from the game in JSON format on the right-hand side of the browser window. 
 
-Each object in the game holds a reference to a sprite object. Sprites identify which slice of what image to use, and data about which other frames in the sheet are part of the current animation, and how fast it should animate.
+To start the leaderboard, navigate to the `/dashboard` directory and run `npm run dev`. This will start the server on `localhost:5173`.
 
-Sprites assume that the entire animation is contained on a single row of the sheet. For the few exceptions, we force the sprite into the correct frame in the entity's update function.
-
-Similarly, entities which need to face left and right replace the image reference in their sprite object with a flipped counterpart.
-
-
-#Level Generation
-Each level object is created with references to the sprites to use for each type of object in the game. In this case, there are only a few tile sets, so individual levels could inherit from level subclasses for overworld, underground, castle, etc.
-
-The level is constructed using a series of calls to functions that populate the tables of objects in the game world.
-
-Pipes work by setting up the animation, and then calling a function to load the new level. Exit pipes use the same code for moving Mario, but with another callback that puts the player into position after setting up the stage.
-
-Known Bugs and Features to Come
-===============================
--Scaling sprites makes them appear with awkward borders. Some fiddling helps this (as you can see in the live version), but they are still not quite perfect.
--A rare case that causes invincibility from getting hit to never end.
--Goombas don't animate in sync with each other.
--Sometimes goombas can get stuck inside each other. I'm not entirely sure what causes this.
--Some sounds might not work due to format compatibility, especially in IE. Yes, IE doesn't support Microsoft's own file format. Really.
-
-All of the features to be implemented are the actual features of the game!
-Namely, a score counter, more types of enemies, and 1up mushrooms.
-
-And more levels!
-
-Also, it should be possible to scale the game to any size, although in order to preserve sprite dimensions changing the actual size of the play area will be necessary for widescreen. For now, the game is rendered in 768x720.
-
-Beyond that, it would be nice to recreate the original game in even more detail, including the precise replication of the 21-frame rule, and glitches such as well-ejection errors, alternate pipes, and various simultaneous left+right input shenanigans.
+Navigate in a browser window to [http://localhost:5173](http://localhost:5173) to see the leaderboard.
