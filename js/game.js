@@ -408,7 +408,7 @@ function resetToSignIn() {
 
 // Add a mechanism to reset game when a level ends
 function onGameEnd() {
-  setTimeout(resetToSignIn, 2000);
+  setTimeout(resetToSignIn, 1000);
 }
 
 function createTimer() {
