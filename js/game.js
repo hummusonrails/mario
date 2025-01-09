@@ -94,6 +94,12 @@ function showSignInForm() {
     <label for="email">Work Email:</label>
     <input type="email" id="email" name="email" required>
     <br>
+    <label for="name">Company:</label>
+    <input type="text" id="company" name="company" required>
+    <br>
+    <label for="name">Job Title:</label>
+    <input type="text" id="job_title" name="job_title" required>
+    <br>
     <label>
       <input type="checkbox" id="consent" name="consent">
       I agree to receive communications from Couchbase.
@@ -110,6 +116,8 @@ function showSignInForm() {
     e.preventDefault();
     const name = form.elements.name.value;
     const email = form.elements.email.value;
+    const company = form.elements.company.value;
+    const job_title = form.elements.job_title.value;
     const consent = form.elements.consent.checked;
 
     try {
@@ -117,7 +125,7 @@ function showSignInForm() {
       const response = await fetch(`${BACKEND_URL}/api/players`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, consent }),
+        body: JSON.stringify({ name, email, company, job_title, consent }),
       });
 
       if (!response.ok) throw new Error("Failed to create player record");

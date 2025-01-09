@@ -31,11 +31,35 @@ const getCollection = async () => {
 };
 
 /**
+ * Route to fetch all player data
+ */
+app.get("/api/players/all", async (req, res) => {
+  try {
+    const cluster = await connectCouchbase();
+    const bucket = cluster.bucket(process.env.COUCHBASE_BUCKET);
+    const scope = bucket.scope("_default");
+    const query = `SELECT META().id AS id, * FROM \`${process.env.COUCHBASE_BUCKET}\``;
+
+    const result = await cluster.query(query);
+
+    const players = result.rows.map(row => ({
+      id: row.id,
+      ...row[process.env.COUCHBASE_BUCKET],
+    }));
+
+    res.status(200).json(players);
+  } catch (error) {
+    console.error("Error fetching all player data:", error);
+    res.status(500).json({ error: "Failed to fetch all player data" });
+  }
+});
+
+/**
  * Route to handle player sign-in and record creation
  */
 app.post("/api/players", async (req, res) => {
   try {
-    const { name, email, consent } = req.body;
+    const { name, company, job_title, email, consent } = req.body;
 
     // Construct a unique ID for the player
     const playerId = `player::${email}`;
@@ -43,6 +67,8 @@ app.post("/api/players", async (req, res) => {
     // Player JSON document
     const playerDocument = {
       name,
+      company,
+      job_title,
       email,
       consent,
       gameplay: {
