@@ -1,11 +1,19 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}', // Include all your source files
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'scan': 'matrix-scan 2s linear infinite',
+      },
+      fontFamily: {
+        mono: ['IBM Plex Mono', 'monospace'],
+      },
+    },
   },
   plugins: [],
-};
+}
+

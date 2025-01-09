@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star } from 'lucide-react';
 import { PlayerData } from "../types/game";
-import { Terminal } from "../components/terminal";
+import { CustomTerminal } from "../components/terminal";
 
 // const BACKEND_URL = "http://localhost:3000";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -258,7 +258,7 @@ export default function Dashboard() {
 
         {/* Terminal Section - 25% width */}
         <div className="w-1/4 p-4 border-l">
-          <Terminal data={players} />
+          <CustomTerminal data={players} />
         </div>
       </div>
     </div>

@@ -1,0 +1,108 @@
+/* Matrix Terminal Styles */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap');
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer components {
+  .matrix-terminal {
+    @apply h-full bg-black rounded-lg overflow-hidden border border-green-500/30;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+  }
+
+  .matrix-header {
+    @apply h-8 bg-black/50 backdrop-blur flex items-center px-4 gap-2 border-b border-green-500/30;
+  }
+
+  .matrix-content {
+    @apply relative p-4 font-mono text-sm overflow-auto h-[calc(100%-2rem)];
+    background: 
+      linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
+      repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.1) 0px, rgba(0, 255, 0, 0.1) 1px, transparent 1px, transparent 2px);
+  }
+}
+
+@keyframes matrix-scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes matrix-flicker {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+@keyframes matrix-text-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.matrix-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: black;
+}
+
+.matrix-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 0, 0.3);
+  border-radius: 4px;
+}
+
+.matrix-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 0, 0.5);
+}
+
+.animate-scan {
+  animation: matrix-scan 2s linear infinite;
+}
+
+.matrix-text {
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.matrix-line {
+  animation: matrix-text-reveal 0.5s ease forwards;
+}
+
+.matrix-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 0, 0.03) 0px,
+    rgba(0, 255, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+}
+
+.matrix-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 0, 0.03) 1px,
+    transparent 1px
+  );
+  background-size: 3px 100%;
+  animation: matrix-flicker 2s infinite;
+  pointer-events: none;
+}
+
