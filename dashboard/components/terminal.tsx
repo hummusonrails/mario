@@ -18,6 +18,8 @@ export function CustomTerminal({ data }: TerminalProps) {
           newObj[key] = "********@****.***";
         } else if (key === "id") {
           newObj[key] = "**********************";
+        } else if (key === "phone") {
+            newObj[key] = "************";
         } else {
           newObj[key] = redactSensitiveData(newObj[key]);
         }
