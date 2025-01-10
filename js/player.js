@@ -289,14 +289,14 @@
 		if (this.pos[0] >= this.targetPos[0]) {
 			this.sprite.size = [0,0];
 			this.vel = [0,0];
-			window.setTimeout(function() {
-				player.sprite.size = player.power===0 ? [16,16] : [16,32];
-				player.exiting = false;
-				player.noInput = false;
+			window.setTimeout(() => {
+				this.sprite.size = this.power === 0 ? [16,16] : [16,32];
+				this.exiting = false;
+				this.noInput = false;
 				level.loader();
-				if (player.power !== 0) player.pos[1] -= 16;
+				if (this.power !== 0) this.pos[1] -= 16;
 				music.overworld.currentTime = 0;
-			}, 5000);
+			}, 1000);
 		}
 	}
 
@@ -455,8 +455,17 @@ Player.prototype.checkCollisions = function() {
 		this.targetPos[0] = level.exit * 16;
 		this.left = true;
 		this.setAnimation();
-		this.waiting = 1;
+		this.waiting = 0.5;
 		this.exiting = true;
+		
+		window.setTimeout(() => {
+			this.sprite.size = this.power === 0 ? [16,16] : [16,32];
+			this.exiting = false;
+			this.noInput = false;
+			level.loader();
+			if (this.power !== 0) this.pos[1] -= 16;
+			music.overworld.currentTime = 0;
+		}, 1000);
 	}
 
 	Player.prototype.defeatEnemy = function(enemyType) {
