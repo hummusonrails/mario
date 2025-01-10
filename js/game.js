@@ -86,29 +86,154 @@ function showSignInForm() {
   // Create form
   const form = document.createElement("form");
   form.id = "sign-in-form";
+  
+  // Add styles
+  const styles = document.createElement("style");
+  styles.textContent = `
+    #sign-in-form {
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      font-family: 'Inter', system-ui, sans-serif;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    #sign-in-form h1 {
+      text-align: center;
+      font-size: 1.875rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+      background: linear-gradient(to right, #ef4444, #eab308, #22c55e);
+      -webkit-background-clip: text;
+      color: transparent;
+      position: relative;
+    }
+
+    #sign-in-form h1::before,
+    #sign-in-form h1::after {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 24px;
+      background-image: url('/mario-coin.webp');
+      background-size: contain;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: bounce 0.5s alternate infinite;
+    }
+
+    #sign-in-form h1::before { left: -32px; }
+    #sign-in-form h1::after { right: -32px; }
+
+    @keyframes bounce {
+      to { transform: translateY(-60%); }
+    }
+
+    #sign-in-form label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #4b5563;
+    }
+
+    #sign-in-form input[type="text"],
+    #sign-in-form input[type="email"] {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+    }
+
+    #sign-in-form input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    #sign-in-form label[for="consent"] {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    #sign-in-form button {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(to right, #ef4444, #dc2626);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #sign-in-form button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    #sign-in-form button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255,255,255,0.2),
+        transparent
+      );
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      to { left: 100%; }
+    }
+  `;
+  document.head.appendChild(styles);
+
   form.innerHTML = `
     <h1>Welcome to Couchbase Mario!</h1>
     <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <br>
+    <input type="text" id="name" name="name" required placeholder="Enter your name">
+    
     <label for="email">Work Email:</label>
-    <input type="email" id="email" name="email" required>
-    <br>
+    <input type="email" id="email" name="email" required placeholder="Enter your work email">
+    
     <label for="phone">Phone Number:</label>
-    <input type="text" id="phone" name="phone" required>
-    <br>
+    <input type="text" id="phone" name="phone" required placeholder="Enter your phone number">
+    
     <label for="company">Company:</label>
-    <input type="text" id="company" name="company" required>
-    <br>
+    <input type="text" id="company" name="company" required placeholder="Enter your company name">
+    
     <label for="job_title">Job Title:</label>
-    <input type="text" id="job_title" name="job_title" required>
-    <br>
-    <label>
+    <input type="text" id="job_title" name="job_title" required placeholder="Enter your job title">
+    
+    <label for="consent">
       <input type="checkbox" id="consent" name="consent">
-      I agree to receive communications from Couchbase.
+      <span>I agree to receive communications from Couchbase.</span>
     </label>
-    <br>
-    <button type="submit">Start Game</button>
+    
+    <button type="submit">Start Your Adventure!</button>
   `;
 
   // Append the form to the body
@@ -138,10 +263,15 @@ function showSignInForm() {
       console.log("Player record created:", data);
       playerId = data.playerId;
 
-      // Start the game
-      form.style.display = "none";
-      canvas.style.display = "block";
-      initializeGame();
+      // Animate form out
+      form.style.animation = 'slideOut 0.5s ease-out forwards';
+      
+      // Start the game after animation
+      setTimeout(() => {
+        form.style.display = "none";
+        canvas.style.display = "block";
+        initializeGame();
+      }, 500);
     } catch (error) {
       console.error("Error:", error);
     }
