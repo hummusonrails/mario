@@ -70,6 +70,7 @@ app.post("/api/players", async (req, res) => {
       company,
       job_title,
       email,
+      phone,
       consent,
       gameplay: {
         startTime: new Date().toISOString(),
