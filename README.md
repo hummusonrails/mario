@@ -46,3 +46,21 @@ Once you have filled in the `.env` file, you can start the leaderboard.
 To start the leaderboard, navigate to the `/dashboard` directory and run `npm run dev`. This will start the server on `localhost:5173`.
 
 Navigate in a browser window to [http://localhost:5173](http://localhost:5173) to see the leaderboard.
+
+### Leaderboard Administrative View
+
+The leaderboard also has an administrative view that allows you to see the data in the Couchbase database. To access the administrative view, navigate to [http://localhost:5173/admin](http://localhost:5173/admin) or to whatever URL you have set up for the leaderboard.
+
+You must set up an admin password in the `.env` file located in the root directory of `/dashboard`. There is an `.env.sample` file inside `/dashboard` to show you what the `.env` file should look like:
+
+```bash
+VITE_ADMIN_VIEW_PASSWORD=
+```
+
+If you do not set up an admin password, the admin view will not be accessible. 
+
+The admin view gives you the ability to download a spreadsheet of player data such as company, phone number, email and job title. You can name the spreadsheet download after the event the game was played at.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
