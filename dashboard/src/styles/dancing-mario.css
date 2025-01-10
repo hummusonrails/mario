@@ -1,0 +1,59 @@
+@keyframes dance-right {
+    from {
+      left: -50px;
+    }
+    to {
+      left: calc(100vw + 50px);
+    }
+  }
+  
+  @keyframes dance-left {
+    from {
+      left: calc(100vw + 50px);
+    }
+    to {
+      left: -50px;
+    }
+  }
+  
+  @keyframes bounce {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-5px);
+    }
+  }
+
+  @keyframes move-left {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-120vw); /* Move beyond the left edge */
+    }
+  }
+  
+  @keyframes move-right {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(120vw); /* Move beyond the right edge */
+    }
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-15px); /* Higher bounce for better visibility */
+    }
+  }
+  
+  .dancing-character {
+    animation: bounce 1s infinite; /* Slower bounce for a playful effect */
+  }
+  
+  

@@ -121,6 +121,51 @@ app.put("/api/players/:playerId", async (req, res) => {
   }
 });
 
+/**
+ * Route to delete all players
+ */
+app.delete("/api/players/delete", async (req, res) => {
+  try {
+    const cluster = await connectCouchbase();
+    const bucket = cluster.bucket(process.env.COUCHBASE_BUCKET);
+    const scope = bucket.scope("_default");
+    const collection = await getCollection();
+
+    // Query to fetch all player IDs
+    const query = `SELECT META().id AS id FROM \`${process.env.COUCHBASE_BUCKET}\``;
+    const result = await cluster.query(query);
+
+    // Delete each player document
+    for (const row of result.rows) {
+      await collection.remove(row.id);
+    }
+
+    res.status(200).json({ message: "All players deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting all players:", error);
+    res.status(500).json({ error: "Failed to delete all players" });
+  }
+});
+
+/**
+ * Route to delete a specific player by ID
+ */
+app.delete("/api/players/delete/:playerId", async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const collection = await getCollection();
+
+    // Delete the specific player document
+    await collection.remove(playerId);
+
+    res.status(200).json({ message: `Player with ID ${playerId} deleted successfully` });
+  } catch (error) {
+    console.error(`Error deleting player with ID ${playerId}:`, error);
+    res.status(500).json({ error: `Failed to delete player with ID ${playerId}` });
+  }
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

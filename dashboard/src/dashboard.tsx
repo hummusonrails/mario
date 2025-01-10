@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star } from 'lucide-react';
 import { PlayerData } from "../types/game";
 import { CustomTerminal } from "../components/terminal";
+import { DancingMario } from '../components/dancing-mario'
+import './styles/dancing-mario.css'
 
 // const BACKEND_URL = "http://localhost:3000";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -61,6 +63,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <DancingMario 
+        characterUrls={{
+          mario: './mario-dance.png',
+          luigi: './luigi-dance.jpg',
+          toad: './toad-dance.gif',
+          yoshi: './yoshi-dance.gif',
+        }} 
+      />
       {/* Full-width Header */}
       <header className="sticky top-0 z-10 border-b bg-white shadow-sm w-full">
         <div className="container flex h-16 items-center justify-between px-4">

@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Download, Check, X, AlertCircle } from 'lucide-react';
+import { Download, Check, X, AlertCircle, Trash2 } from 'lucide-react';
 import { PlayerData } from '../../types/game';
 import ExcelJS from 'exceljs';
 
-// In a real app, this would come from your API
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const ADMIN_VIEW_PASSWORD = import.meta.env.VITE_ADMIN_VIEW_PASSWORD;
 
@@ -18,7 +17,6 @@ export default function AdminView() {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [eventName, setEventName] = useState('');
 
-  // Fetch players data when authenticated
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -86,6 +84,36 @@ export default function AdminView() {
     link.click();
   };
 
+  const handleClearAllData = async () => {
+    if (confirm('Are you sure you want to delete all player data?')) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/players/delete`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete all players');
+        setPlayers([]);
+      } catch (error) {
+        console.error('Error deleting all players:', error);
+        alert('Failed to delete all players.');
+      }
+    }
+  };
+
+  const handleDeletePlayer = async (playerId: string) => {
+    if (confirm('Are you sure you want to delete this player?')) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/players/delete/${playerId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete player');
+        setPlayers((prev) => prev.filter((player) => player.id !== playerId));
+      } catch (error) {
+        console.error('Error deleting player:', error);
+        alert('Failed to delete the player.');
+      }
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -118,9 +146,15 @@ export default function AdminView() {
             <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900">
               Participating Attendees
             </CardTitle>
+            <Button
+              variant="destructive"
+              onClick={handleClearAllData}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              Clear All Data
+            </Button>
           </div>
 
-          {/* Enhanced Event Name Section */}
           <div className="bg-white rounded-lg border border-slate-200 p-6">
             <div className="flex flex-col space-y-6">
               <div className="flex items-start space-x-2">
@@ -193,12 +227,13 @@ export default function AdminView() {
                     <th className="px-6 py-4 text-left font-semibold tracking-tight">Phone</th>
                     <th className="px-6 py-4 text-left font-semibold tracking-tight">Email</th>
                     <th className="px-6 py-4 text-center font-semibold tracking-tight">Consent</th>
+                    <th className="px-6 py-4 text-center font-semibold tracking-tight">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {players.map((player, index) => (
                     <tr
-                      key={player.email}
+                      key={player.id}
                       className={`
                         transition-colors hover:bg-slate-50/80
                         ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}
@@ -217,6 +252,16 @@ export default function AdminView() {
                             <X className="h-5 w-5 text-red-500" />
                           )}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => handleDeletePlayer(player.id)}
+                          className="flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </Button>
                       </td>
                     </tr>
                   ))}
