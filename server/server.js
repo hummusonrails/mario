@@ -59,7 +59,7 @@ app.get("/api/players/all", async (req, res) => {
  */
 app.post("/api/players", async (req, res) => {
   try {
-    const { name, company, job_title, email, consent } = req.body;
+    const { name, company, job_title, email, phone, consent } = req.body;
 
     // Construct a unique ID for the player
     const playerId = `player::${email}`;
