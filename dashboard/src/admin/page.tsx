@@ -30,6 +30,8 @@ export default function AdminView() {
 
     if (isAuthenticated) {
       fetchPlayers();
+      const interval = setInterval(fetchPlayers, 30000);
+      return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
@@ -119,24 +121,31 @@ export default function AdminView() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
           <h2 className="text-lg font-bold text-gray-700 mb-4">Admin Access</h2>
-          <Input
-            type="password"
-            placeholder="Enter Admin Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mb-4"
-          />
-          <Button
-            variant="default"
-            onClick={handlePasswordSubmit}
-            className="w-full"
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handlePasswordSubmit();
+            }}
           >
-            Submit
-          </Button>
+            <Input
+              type="password"
+              placeholder="Enter Admin Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mb-4"
+            />
+            <Button
+              type="submit"
+              variant="default"
+              className="w-full"
+            >
+              Submit
+            </Button>
+          </form>
         </div>
       </div>
     );
-  }
+  }  
 
   return (
     <div className="min-h-screen bg-white p-8 font-corporate">
