@@ -11,6 +11,7 @@ module.exports = {
       },
       fontFamily: {
         mono: ['IBM Plex Mono', 'monospace'],
+        corporate: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
