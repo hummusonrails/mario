@@ -21,7 +21,7 @@ var vX = 0,
 var gameTime = 0;
 var playerId; // Player ID for backend integration
 var previousScore = 0;
-var gameTimer = 90; // 90 seconds
+var gameTimer = 50; // 50 seconds
 var timerDisplay = null;
 var timerInterval = null;
 var lastUpdateTime = 0;
@@ -56,7 +56,7 @@ function initializeGame() {
   
   level = null;
   gameTime = 0;
-  gameTimer = 90; // Reset timer
+  gameTimer = 50; // Reset timer
   
   // Clear any existing timer
   if (timerInterval) {
