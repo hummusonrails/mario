@@ -43,15 +43,24 @@ export default function Dashboard() {
       .sort((a, b) => {
         const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats || {};
         const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats || {};
-        const aScore = (aStats.coinsCollected || 0) * 100 + (aStats.enemiesDefeated || 0) * 500;
-        const bScore = (bStats.coinsCollected || 0) * 100 + (bStats.enemiesDefeated || 0) * 500;
+        
+        const aScore = 
+          (aStats.coinsCollected || 0) * 100 + 
+          (aStats.enemiesDefeated || 0) * 500 + 
+          (aStats.flagPoleHeight || 0) * 1000; 
+  
+        const bScore = 
+          (bStats.coinsCollected || 0) * 100 + 
+          (bStats.enemiesDefeated || 0) * 500 + 
+          (bStats.flagPoleHeight || 0) * 1000; 
+  
         return bScore - aScore;
       })
       .map((player, index) => ({
         ...player,
         rank: index + 1,
       }));
-  }, [players]);
+  }, [players]);  
 
   if (loading) {
     return (
