@@ -1,112 +1,78 @@
 'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star } from 'lucide-react';
+import { Button } from "../components/ui/button"
+import { CoinsIcon as Coin, Flag, Flame, Sword, Trophy, Star, Eye, EyeOff } from 'lucide-react';
 import { PlayerData } from "../types/game";
 import { CustomTerminal } from "../components/terminal";
 import { DancingMario } from '../components/dancing-mario'
+import { Countdown } from "../components/countdown"
 import './styles/dancing-mario.css'
 
 // const BACKEND_URL = "http://localhost:3000";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function Dashboard() {
-  const [players, setPlayers] = useState<PlayerData[]>([]);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [players, setPlayers] = useState<PlayerData[]>([])
+  const [isRevealed, setIsRevealed] = useState(false)
+  const [isCountingDown, setIsCountingDown] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        setError(false);
-        const response = await fetch(`${BACKEND_URL}/api/players/all`);
-        const data = await response.json();
-        console.log("Fetched players:", data);
-        setPlayers(data);
-      } catch (err) {
-        console.error("Error fetching players:", error);
-        setError(true);
+        const response = await fetch(`${BACKEND_URL}/api/players/all`)
+        const data = await response.json()
+        setPlayers(data)
+      } catch (error) {
+        console.error("Error fetching players:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 5000);
+    fetchPlayers()
+  }, [])
 
-    return () => clearInterval(interval);
-  }, []);
+  const handleReveal = () => {
+    setIsCountingDown(true)
+  }
 
-  const leaderboardData = useMemo(() => {
-    return players
-      .sort((a, b) => {
-        const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats || {};
-        const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats || {};
-        
-        const aScore = 
-          (aStats.coinsCollected || 0) * 100 + 
-          (aStats.enemiesDefeated || 0) * 500 + 
-          (aStats.flagPoleHeight || 0) * 1000; 
-  
-        const bScore = 
-          (bStats.coinsCollected || 0) * 100 + 
-          (bStats.enemiesDefeated || 0) * 500 + 
-          (bStats.flagPoleHeight || 0) * 1000; 
-  
-        return bScore - aScore;
-      })
-      .map((player, index) => ({
-        ...player,
-        rank: index + 1,
-      }));
-  }, [players]);  
+  const handleCountdownComplete = () => {
+    setIsCountingDown(false)
+    setIsRevealed(true)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
         <div className="spinner border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <DancingMario 
+      {isCountingDown ? <Countdown startFrom={10} onComplete={handleCountdownComplete} /> : null}
+      <DancingMario
         characterUrls={{
-          mario: './mario-dance.png',
-          luigi: './luigi-dance.jpg',
-          toad: './toad-dance.gif',
-          yoshi: './yoshi-dance.gif',
-        }} 
+          mario: "./mario-dance.png",
+          luigi: "./luigi-dance.jpg",
+          toad: "./toad-dance.gif",
+          yoshi: "./yoshi-dance.gif",
+        }}
       />
       {/* Full-width Header */}
       <header className="sticky top-0 z-10 border-b bg-white shadow-sm w-full">
         <div className="container flex h-16 items-center justify-between px-4">
-          <img
-            src="./couchbase.svg"
-            alt="Couchbase Logo"
-            width={150}
-            height={40}
-          />
+          <img src="./couchbase.svg" alt="Couchbase Logo" width={150} height={40} />
           <div className="flex items-center gap-2">
-            <img
-              src="./mario-coin.webp"
-              alt="Mario Coin"
-              width={30}
-              height={30}
-              className="animate-bounce"
-            />
+            <img src="./mario-coin.webp" alt="Mario Coin" width={30} height={30} className="animate-bounce" />
             <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
               Super Mario Tournament
             </h1>
-            <img
-              src="./mario-coin.webp"
-              alt="Mario Coin"
-              width={30}
-              height={30}
-              className="animate-bounce"
-            />
+            <img src="/mario-coin.webp" alt="Mario Coin" width={30} height={30} className="animate-bounce" />
           </div>
         </div>
       </header>
@@ -114,7 +80,7 @@ export default function Dashboard() {
       {/* Split Content Area */}
       <div className="flex flex-1">
         {/* Main Dashboard Section - 75% width */}
-        <div className="w-3/4 overflow-auto">
+        <div className="w-3/4">
           <main className="container mx-auto px-4 py-8">
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -126,8 +92,8 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-yellow-700">
                     {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
-                      return sum + (stats?.coinsCollected || 0);
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+                      return sum + (stats?.coinsCollected || 0)
                     }, 0)}
                   </div>
                 </CardContent>
@@ -141,8 +107,8 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-red-700">
                     {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
-                      return sum + (stats?.fireballsShot || 0);
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+                      return sum + (stats?.fireballsShot || 0)
                     }, 0)}
                   </div>
                 </CardContent>
@@ -156,8 +122,8 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-purple-700">
                     {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
-                      return sum + (stats?.enemiesDefeated || 0);
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+                      return sum + (stats?.enemiesDefeated || 0)
                     }, 0)}
                   </div>
                 </CardContent>
@@ -171,8 +137,8 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-green-700">
                     {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
-                      return sum + (stats?.flagPoleHeight ? 1 : 0);
+                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+                      return sum + (stats?.flagPoleHeight ? 1 : 0)
                     }, 0)}
                   </div>
                 </CardContent>
@@ -180,17 +146,47 @@ export default function Dashboard() {
             </div>
 
             {/* Leaderboard */}
-            <Card className="overflow-hidden">
+            <Card className="overflow-visible">
               <CardHeader className="border-b bg-gradient-to-br from-gray-50 to-gray-100">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-yellow-500" />
-                  <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-red-600">
-                    Tournament Leaderboard
-                  </CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-6 w-6 text-yellow-500" />
+                    <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-red-600">
+                      Tournament Leaderboard
+                    </CardTitle>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReveal}
+                    disabled={isRevealed || isCountingDown}
+                    className="flex items-center gap-2"
+                  >
+                    {isRevealed ? (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        Revealed
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-4 w-4" />
+                        Reveal Scores
+                      </>
+                    )}
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="relative">
+                  {!isRevealed && !isCountingDown && (
+                    <div className="absolute inset-0 bg-gray-100/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                      <div className="relative top-1/4 w-full text-center">
+                        <EyeOff className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-lg font-medium text-gray-600">Scores are hidden</p>
+                        <p className="text-sm text-gray-500">Waiting for the big reveal!</p>
+                      </div>
+                    </div>
+                  )}
                   <table className="w-full">
                     <thead>
                       <tr className="border-b bg-gray-50">
@@ -218,55 +214,73 @@ export default function Dashboard() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {leaderboardData.map((player) => {
-                        const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats;
-                        const score = (stats?.coinsCollected || 0) * 100 + (stats?.enemiesDefeated || 0) * 500 + (stats?.flagPoleHeight || 0) * 1000;
+                    <tbody className={!isRevealed ? "blur-sm" : ""}>
+                      {players
+                        .sort((a, b) => {
+                          const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats
+                          const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats
+                          const aScore = (aStats?.coinsCollected || 0) * 100 + (aStats?.enemiesDefeated || 0) * 500
+                          const bScore = (bStats?.coinsCollected || 0) * 100 + (bStats?.enemiesDefeated || 0) * 500
+                          return bScore - aScore
+                        })
+                        .map((player, index) => {
+                          const stats =
+                            player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
+                          const score =
+                            (stats?.coinsCollected || 0) * 100 +
+                            (stats?.enemiesDefeated || 0) * 500 +
+                            (stats?.flagPoleHeight || 0) * 1000
 
-                        return (
-                          <tr
-                            key={player.name}
-                            className="border-b hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-2">
-                                <div className={`
-                                  w-8 h-8 rounded-full flex items-center justify-center font-bold
-                                  ${player.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
-                                    player.rank === 2 ? 'bg-gray-100 text-gray-700' :
-                                    player.rank === 3 ? 'bg-orange-100 text-orange-700' :
-                                    'bg-gray-50 text-gray-500'}
-                                `}>
-                                  #{player.rank}
+                          return (
+                            <tr key={player.name} className="border-b hover:bg-gray-50 transition-colors">
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`
+                                    w-8 h-8 rounded-full flex items-center justify-center font-bold
+                                    ${
+                                      index === 0
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : index === 1
+                                          ? "bg-gray-100 text-gray-700"
+                                          : index === 2
+                                            ? "bg-orange-100 text-orange-700"
+                                            : "bg-gray-50 text-gray-500"
+                                    }
+                                  `}
+                                  >
+                                    #{index + 1}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="flex flex-col">
-                                <span className="font-medium text-gray-900">{player.name}</span>
-                                <span className="text-sm text-gray-500">{player.company}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-4 text-center font-medium text-yellow-600">
-                              {stats?.coinsCollected || 0}
-                            </td>
-                            <td className="px-4 py-4 text-center font-medium text-red-600">
-                              {stats?.fireballsShot || 0}
-                            </td>
-                            <td className="px-4 py-4 text-center font-medium text-purple-600">
-                              {stats?.enemiesDefeated || 0}
-                            </td>
-                            <td className="px-4 py-4 text-center font-medium text-green-600">
-                              {stats?.flagPoleHeight || 0}
-                            </td>
-                            <td className="px-4 py-4 text-center">
-                              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                                {score}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-gray-900">{player.name}</span>
+                                  <span className="text-sm text-gray-500">{player.email}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-yellow-600">
+                                {stats?.coinsCollected || 0}
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-red-600">
+                                {stats?.fireballsShot || 0}
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-purple-600">
+                                {stats?.enemiesDefeated || 0}
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-green-600">
+                                {stats?.flagPoleHeight || 0}
+                              </td>
+                              <td className="px-4 py-4 text-center">
+                                <span
+                                  className={`font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 ${!isRevealed ? "invisible" : ""}`}
+                                >
+                                  {score}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })}
                     </tbody>
                   </table>
                 </div>
@@ -281,5 +295,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  );
+  )
 }
