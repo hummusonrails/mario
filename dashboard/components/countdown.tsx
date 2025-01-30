@@ -26,7 +26,7 @@ export function Countdown({ onComplete, startFrom }: CountdownProps) {
 
     return (
         <AnimatePresence mode="sync">
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[20000] pointer-events-none">
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[20000] pointer-events-none">
                 <motion.div
                         key={`count-${count}`}
                         initial={{ scale: 0.5, opacity: 0 }}
