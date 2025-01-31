@@ -41,6 +41,7 @@ export interface PlayerStats {
       score: number
       lives: number
     }
+    cumulativeStats: PlayerStats
   }
   
   

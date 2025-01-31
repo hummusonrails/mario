@@ -92,8 +92,7 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-yellow-700">
                     {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                      return sum + (stats?.coinsCollected || 0)
+                      return sum + (player.cumulativeStats?.coinsCollected || 0);
                     }, 0)}
                   </div>
                 </CardContent>
@@ -217,8 +216,8 @@ export default function Dashboard() {
                     <tbody className={!isRevealed ? "blur-sm" : ""}>
                       {players
                         .sort((a, b) => {
-                          const aStats = a.gameplay.states[a.gameplay.states.length - 1]?.state?.state?.playerStats
-                          const bStats = b.gameplay.states[b.gameplay.states.length - 1]?.state?.state?.playerStats
+                          const aStats = a.cumulativeStats || {};
+                          const bStats = b.cumulativeStats || {};                    
                           const aScore = (aStats?.coinsCollected || 0) * 100 + (aStats?.enemiesDefeated || 0) * 500
                           const bScore = (bStats?.coinsCollected || 0) * 100 + (bStats?.enemiesDefeated || 0) * 500
                           return bScore - aScore
@@ -260,22 +259,24 @@ export default function Dashboard() {
                                 </div>
                               </td>
                               <td className="px-4 py-4 text-center font-medium text-yellow-600">
-                                {stats?.coinsCollected || 0}
+                                {player.cumulativeStats?.coinsCollected || 0}
                               </td>
                               <td className="px-4 py-4 text-center font-medium text-red-600">
-                                {stats?.fireballsShot || 0}
+                                {player.cumulativeStats?.fireballsShot || 0}
                               </td>
                               <td className="px-4 py-4 text-center font-medium text-purple-600">
-                                {stats?.enemiesDefeated || 0}
+                                {player.cumulativeStats?.enemiesDefeated || 0}
                               </td>
                               <td className="px-4 py-4 text-center font-medium text-green-600">
-                                {stats?.flagPoleHeight || 0}
+                                {player.cumulativeStats?.flagPoleHeight || 0}
                               </td>
                               <td className="px-4 py-4 text-center">
                                 <span
                                   className={`font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 ${!isRevealed ? "invisible" : ""}`}
                                 >
-                                  {score}
+                                {(player.cumulativeStats?.coinsCollected || 0) * 100 +
+                                  (player.cumulativeStats?.enemiesDefeated || 0) * 500 +
+                                  (player.cumulativeStats?.flagPoleHeight || 0) * 1000}
                                 </span>
                               </td>
                             </tr>

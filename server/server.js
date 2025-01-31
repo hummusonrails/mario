@@ -78,6 +78,18 @@ app.post("/api/players", async (req, res) => {
         score: 0,
         lives: 1,
       },
+      cumulativeStats: {
+        coinsCollected: 0,
+        fireballsShot: 0,
+        enemiesDefeated: 0,
+        flagPoleHeight: 0,
+      },
+      lastStatsSnapshot: {
+        coinsCollected: 0,
+        fireballsShot: 0,
+        enemiesDefeated: 0,
+        flagPoleHeight: 0,
+      },
     };
 
     const collection = await getCollection();
@@ -106,11 +118,59 @@ app.put("/api/players/:playerId", async (req, res) => {
     const result = await collection.get(playerId);
     const playerDocument = result.content;
 
+    // Ensure `cumulativeStats` is initialized
+    if (!playerDocument.cumulativeStats) {
+      playerDocument.cumulativeStats = {
+        coinsCollected: 0,
+        fireballsShot: 0,
+        enemiesDefeated: 0,
+        flagPoleHeight: 0,
+      };
+    }
+
+    if (!playerDocument.lastStatsSnapshot) {
+      playerDocument.lastStatsSnapshot = {
+        coinsCollected: 0,
+        fireballsShot: 0,
+        enemiesDefeated: 0,
+        flagPoleHeight: 0,
+      };
+    }
+
+    // Extract current stats
+    const currentStats = gameplayState.state.playerStats || {};
+
+    // Calculate deltas
+    const delta = {
+      coinsCollected: (currentStats.coinsCollected || 0) - (playerDocument.lastStatsSnapshot.coinsCollected || 0),
+      fireballsShot: (currentStats.fireballsShot || 0) - (playerDocument.lastStatsSnapshot.fireballsShot || 0),
+      enemiesDefeated: (currentStats.enemiesDefeated || 0) - (playerDocument.lastStatsSnapshot.enemiesDefeated || 0),
+      flagPoleHeight: Math.max(
+        playerDocument.cumulativeStats.flagPoleHeight,
+        currentStats.flagPoleHeight || 0
+      ), // Flag height should always store the highest
+    };
+
+    // Ensure negative values do not occur (reset to 0 if negative)
+    Object.keys(delta).forEach((key) => {
+      if (delta[key] < 0) delta[key] = 0;
+    });
+
+    // Apply deltas to cumulative stats
+    playerDocument.cumulativeStats.coinsCollected += delta.coinsCollected;
+    playerDocument.cumulativeStats.fireballsShot += delta.fireballsShot;
+    playerDocument.cumulativeStats.enemiesDefeated += delta.enemiesDefeated;
+    playerDocument.cumulativeStats.flagPoleHeight = delta.flagPoleHeight;
+
+    playerDocument.lastStatsSnapshot = { ...currentStats };
+
     // Update the gameplay state
     playerDocument.gameplay.states.push({
       timestamp: new Date().toISOString(),
       state: gameplayState,
     });
+
+    console.log("Updated player document:", playerDocument);
 
     // Upsert the updated document
     await collection.upsert(playerId, playerDocument);

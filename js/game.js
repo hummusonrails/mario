@@ -1,4 +1,5 @@
 BACKEND_URL = "https://mario-p44r.onrender.com";
+// BACKEND_URL = "http://localhost:3000";
 
 var requestAnimFrame = (function () {
   return (
