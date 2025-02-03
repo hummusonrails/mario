@@ -16,6 +16,8 @@ This repository is also set up to host the game automatically on GitHub Pages in
 
 Each player is required to complete a sign-up form before playing the game. The form asks the player for their name, email, company name and job title, as well as a checkbox to consent to receiving marketing emails. Once the form has been submitted this initiates a new player JSON document in the Couchbase database.
 
+The administrator of the game can define whether or not to accept personal email addresses by specifying in the URL parameters of the game if `work_emails` is set to `true` or `false`. If `work_emails` is set to `true`, the game will only accept email addresses that contain a company domain. If `work_emails` is set to `false`, the game will accept any email address. For instance, if the URL of the game is `https://<username>.github.io/<repository>?work_emails=true`, the game will only accept email addresses from company domains. If the URL of the game is `https://<username>.github.io/<repository>?work_emails=false`, the game will accept any email address.
+
 ## The Backend Server
 
 The Node.js server is found in `/server/server.js` and is responsible for sending the game data to Couchbase. The server is also responsible for sending the game data to the frontend leaderboard.

@@ -29,7 +29,6 @@ var lastUpdateTime = 0;
 let UPDATE_INTERVAL = 1000; // Update every 1 second
 
 // Create canvas
-
 function createCanvas() {
   canvas = document.createElement("canvas");
   ctx = canvas.getContext("2d");
@@ -101,12 +100,10 @@ function showSignInForm() {
       font-family: 'Inter', system-ui, sans-serif;
       animation: slideIn 0.5s ease-out;
     }
-
     @keyframes slideIn {
       from { transform: translateY(-20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-
     #sign-in-form h1 {
       text-align: center;
       font-size: 1.875rem;
@@ -117,7 +114,6 @@ function showSignInForm() {
       color: transparent;
       position: relative;
     }
-
     #sign-in-form h1::before,
     #sign-in-form h1::after {
       content: '';
@@ -131,21 +127,17 @@ function showSignInForm() {
       transform: translateY(-50%);
       animation: bounce 0.5s alternate infinite;
     }
-
     #sign-in-form h1::before { left: -32px; }
     #sign-in-form h1::after { right: -32px; }
-
     @keyframes bounce {
       to { transform: translateY(-60%); }
     }
-
     #sign-in-form label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
       color: #4b5563;
     }
-
     #sign-in-form input[type="text"],
     #sign-in-form input[type="email"] {
       width: 100%;
@@ -156,13 +148,11 @@ function showSignInForm() {
       transition: all 0.2s;
       font-size: 0.875rem;
     }
-
     #sign-in-form input:focus {
       outline: none;
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-
     #sign-in-form label[for="consent"] {
       display: flex;
       align-items: center;
@@ -170,7 +160,6 @@ function showSignInForm() {
       margin: 1rem 0;
       font-size: 0.875rem;
     }
-
     #sign-in-form button {
       width: 100%;
       padding: 0.75rem;
@@ -184,12 +173,10 @@ function showSignInForm() {
       position: relative;
       overflow: hidden;
     }
-
     #sign-in-form button:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-
     #sign-in-form button::after {
       content: '';
       position: absolute;
@@ -205,7 +192,6 @@ function showSignInForm() {
       );
       animation: shine 3s infinite;
     }
-
     @keyframes shine {
       to { left: 100%; }
     }
@@ -240,15 +226,49 @@ function showSignInForm() {
   // Append the form to the body
   document.body.appendChild(form);
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const workEmailsOnly = urlParams.get("work_emails") === "true";
+
+  // If work emails only is enabled, add an input listener to validate the email field.
+  if (workEmailsOnly) {
+    const emailInput = form.querySelector('input[name="email"]');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    // Create an element to show error messages if not already present
+    let errorElement = document.createElement("div");
+    errorElement.id = "email-error";
+    errorElement.style.color = "red";
+    errorElement.style.fontSize = "0.875rem";
+    errorElement.style.marginBottom = "1rem";
+    emailInput.parentNode.insertBefore(errorElement, emailInput.nextSibling);
+
+    emailInput.addEventListener("input", function (e) {
+      const emailVal = e.target.value.trim().toLowerCase();
+      if (emailVal.endsWith("@gmail.com")) {
+        errorElement.textContent = "Only work emails are accepted. Please use your work email.";
+        submitButton.disabled = true;
+      } else {
+        errorElement.textContent = "";
+        submitButton.disabled = false;
+      }
+    });
+  }
+
   // Handle form submission
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     const name = form.elements.name.value;
-    const email = form.elements.email.value;
+    const email = form.elements.email.value.trim().toLowerCase();
     const phone = form.elements.phone.value;
     const company = form.elements.company.value;
     const job_title = form.elements.job_title.value;
     const consent = form.elements.consent.checked;
+
+    // Final check: if work emails are required and a Gmail address is provided, prevent submission.
+    if (workEmailsOnly && email.endsWith("@gmail.com")) {
+      alert("Only work emails are accepted. Please enter a non-Gmail address.");
+      return;
+    }
 
     try {
       // Send player data to the server
@@ -320,49 +340,49 @@ async function sendGameplayUpdate(state) {
 
 // Add this new function for immediate updates
 async function sendImmediateGameplayUpdate(state) {
-    try {
-        // Ensure player stats are properly initialized
-        if (!player.coinsCollected) player.coinsCollected = 0;
-        if (!player.coins) player.coins = 0;
+  try {
+    // Ensure player stats are properly initialized
+    if (!player.coinsCollected) player.coinsCollected = 0;
+    if (!player.coins) player.coins = 0;
 
-        const gameState = {
-            timestamp: new Date().toISOString(),
-            state: {
-                ...state,
-                playerStats: {
-                    coinsCollected: parseInt(player.coinsCollected) || 0,
-                    coins: parseInt(player.coins) || 0,
-                    fireballsShot: player.fireballsShot || 0,
-                    enemiesDefeated: player.enemiesDefeated || 0,
-                    reachedFlag: player.reachedFlag || false,
-                    flagPoleHeight: player.flagPoleHeight || 0
-                }
-            }
-        };
-
-        console.log('🪙 IMMEDIATE UPDATE:', {
-            playerStats: gameState.state.playerStats,
-            rawValues: {
-                coins: player.coins,
-                coinsCollected: player.coinsCollected
-            }
-        });
-
-        const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ gameplayState: gameState }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to update gameplay state");
+    const gameState = {
+      timestamp: new Date().toISOString(),
+      state: {
+        ...state,
+        playerStats: {
+          coinsCollected: parseInt(player.coinsCollected) || 0,
+          coins: parseInt(player.coins) || 0,
+          fireballsShot: player.fireballsShot || 0,
+          enemiesDefeated: player.enemiesDefeated || 0,
+          reachedFlag: player.reachedFlag || false,
+          flagPoleHeight: player.flagPoleHeight || 0
         }
+      }
+    };
 
-        const responseData = await response.json();
-        console.log('🪙 Server Response:', responseData);
-    } catch (error) {
-        console.error("🪙 Update Error:", error);
+    console.log('🪙 IMMEDIATE UPDATE:', {
+      playerStats: gameState.state.playerStats,
+      rawValues: {
+        coins: player.coins,
+        coinsCollected: player.coinsCollected
+      }
+    });
+
+    const response = await fetch(`${BACKEND_URL}/api/players/${playerId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameplayState: gameState }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update gameplay state");
     }
+
+    const responseData = await response.json();
+    console.log('🪙 Server Response:', responseData);
+  } catch (error) {
+    console.error("🪙 Update Error:", error);
+  }
 }
 
 // Initialize level and start gameplay
