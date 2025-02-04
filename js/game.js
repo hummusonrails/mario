@@ -199,105 +199,139 @@ function showSignInForm() {
   document.head.appendChild(styles);
 
   form.innerHTML = `
-    <h1>Welcome to Couchbase Mario!</h1>
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required placeholder="Enter your name">
-    
-    <label for="email">Work Email:</label>
-    <input type="email" id="email" name="email" required placeholder="Enter your work email">
-    
-    <label for="phone">Phone Number:</label>
-    <input type="text" id="phone" name="phone" required placeholder="Enter your phone number">
-    
-    <label for="company">Company:</label>
-    <input type="text" id="company" name="company" required placeholder="Enter your company name">
-    
-    <label for="job_title">Job Title:</label>
-    <input type="text" id="job_title" name="job_title" required placeholder="Enter your job title">
-    
-    <label for="consent">
-      <input type="checkbox" id="consent" name="consent">
-      <span>I agree to receive communications from Couchbase.</span>
-    </label>
-    
-    <button type="submit">Start Your Adventure!</button>
-  `;
+  <h1>Welcome to Couchbase Mario!</h1>
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" required placeholder="Enter your name">
+  
+  <label for="email">Work Email:</label>
+  <input type="email" id="email" name="email" required placeholder="Enter your work email">
+  
+  <label for="phone">Phone Number:</label>
+  <input type="text" id="phone" name="phone" required placeholder="Enter your phone number">
+  
+  <label for="company">Company:</label>
+  <input type="text" id="company" name="company" required placeholder="Enter your company name">
+  
+  <label for="job_title">Job Title:</label>
+  <input type="text" id="job_title" name="job_title" required placeholder="Enter your job title">
+  
+  <label for="consent">
+    <input type="checkbox" id="consent" name="consent">
+    <span>I agree to receive communications from Couchbase.</span>
+  </label>
+  
+  <button type="submit">Start Your Adventure!</button>
+`;
 
-  // Append the form to the body
-  document.body.appendChild(form);
+// Append the form to the body
+document.body.appendChild(form);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const workEmailsOnly = urlParams.get("work_emails") === "true";
+// Get references to the submit button and input fields
+const submitButton = form.querySelector('button[type="submit"]');
+const emailInput = form.querySelector('input[name="email"]');
+const nameInput = form.querySelector('input[name="name"]');
 
-  // If work emails only is enabled, add an input listener to validate the email field.
-  if (workEmailsOnly) {
-    const emailInput = form.querySelector('input[name="email"]');
-    const submitButton = form.querySelector('button[type="submit"]');
+// Create error message elements for email and name
+let emailErrorElement = document.createElement("div");
+emailErrorElement.id = "email-error";
+emailErrorElement.style.color = "red";
+emailErrorElement.style.fontSize = "0.875rem";
+emailErrorElement.style.marginBottom = "1rem";
+emailInput.parentNode.insertBefore(emailErrorElement, emailInput.nextSibling);
 
-    // Create an element to show error messages if not already present
-    let errorElement = document.createElement("div");
-    errorElement.id = "email-error";
-    errorElement.style.color = "red";
-    errorElement.style.fontSize = "0.875rem";
-    errorElement.style.marginBottom = "1rem";
-    emailInput.parentNode.insertBefore(errorElement, emailInput.nextSibling);
+let nameErrorElement = document.createElement("div");
+nameErrorElement.id = "name-error";
+nameErrorElement.style.color = "red";
+nameErrorElement.style.fontSize = "0.875rem";
+nameErrorElement.style.marginBottom = "1rem";
+nameInput.parentNode.insertBefore(nameErrorElement, nameInput.nextSibling);
 
-    emailInput.addEventListener("input", function (e) {
-      const emailVal = e.target.value.trim().toLowerCase();
-      if (emailVal.endsWith("@gmail.com")) {
-        errorElement.textContent = "Only work emails are accepted. Please use your work email.";
-        submitButton.disabled = true;
-      } else {
-        errorElement.textContent = "";
-        submitButton.disabled = false;
-      }
-    });
+// Check for the work_emails flag in the URL
+const urlParams = new URLSearchParams(window.location.search);
+const workEmailsOnly = urlParams.get("work_emails") === "true";
+
+// Helper function to perform combined validation
+function validateForm() {
+  let disable = false;
+
+  // Validate name: require at least two words
+  const nameVal = nameInput.value.trim();
+  if (nameVal.split(/\s+/).length < 2) {
+    nameErrorElement.textContent = "Please enter your first and last name.";
+    disable = true;
+  } else {
+    nameErrorElement.textContent = "";
   }
 
-  // Handle form submission
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const name = form.elements.name.value;
-    const email = form.elements.email.value.trim().toLowerCase();
-    const phone = form.elements.phone.value;
-    const company = form.elements.company.value;
-    const job_title = form.elements.job_title.value;
-    const consent = form.elements.consent.checked;
-
-    // Final check: if work emails are required and a Gmail address is provided, prevent submission.
-    if (workEmailsOnly && email.endsWith("@gmail.com")) {
-      alert("Only work emails are accepted. Please enter a non-Gmail address.");
-      return;
+  // Validate email only if work emails are required
+  if (workEmailsOnly) {
+    const emailVal = emailInput.value.trim().toLowerCase();
+    if (emailVal.endsWith("@gmail.com")) {
+      emailErrorElement.textContent = "Only work emails are accepted. Please use your work email.";
+      disable = true;
+    } else {
+      emailErrorElement.textContent = "";
     }
-
-    try {
-      // Send player data to the server
-      const response = await fetch(`${BACKEND_URL}/api/players`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, company, phone, job_title, consent }),
-      });
-
-      if (!response.ok) throw new Error("Failed to create player record");
-
-      const data = await response.json();
-      console.log("Player record created:", data);
-      playerId = data.playerId;
-
-      // Animate form out
-      form.style.animation = 'slideOut 0.5s ease-out forwards';
-      
-      // Start the game after animation
-      setTimeout(() => {
-        form.style.display = "none";
-        canvas.style.display = "block";
-        initializeGame();
-      }, 500);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  });
+  }
+  
+  submitButton.disabled = disable;
 }
+
+// Attach input listeners to both the email and name fields
+nameInput.addEventListener("input", validateForm);
+if (workEmailsOnly) {
+  emailInput.addEventListener("input", validateForm);
+}
+
+// Handle form submission
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const name = form.elements.name.value.trim();
+  const email = form.elements.email.value.trim().toLowerCase();
+  const phone = form.elements.phone.value;
+  const company = form.elements.company.value;
+  const job_title = form.elements.job_title.value;
+  const consent = form.elements.consent.checked;
+
+  // Final validation for work emails
+  if (workEmailsOnly && email.endsWith("@gmail.com")) {
+    alert("Only work emails are accepted. Please enter a non-Gmail address.");
+    return;
+  }
+  // Final validation for name (ensure at least two words)
+  if (name.split(/\s+/).length < 2) {
+    alert("Please enter your first and last name.");
+    return;
+  }
+
+  try {
+    // Send player data to the server
+    const response = await fetch(`${BACKEND_URL}/api/players`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, company, phone, job_title, consent }),
+    });
+
+    if (!response.ok) throw new Error("Failed to create player record");
+
+    const data = await response.json();
+    console.log("Player record created:", data);
+    playerId = data.playerId;
+
+    // Animate form out
+    form.style.animation = 'slideOut 0.5s ease-out forwards';
+    
+    // Start the game after animation
+    setTimeout(() => {
+      form.style.display = "none";
+      canvas.style.display = "block";
+      initializeGame();
+    }, 500);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+});
+};
 
 // Throttle network updates
 UPDATE_INTERVAL = 1000; // Update every 1 second
