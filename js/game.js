@@ -1,6 +1,175 @@
 BACKEND_URL = "https://mario-p44r.onrender.com";
 // BACKEND_URL = "http://localhost:3000";
 
+// Create and initialize the inspector panel
+function createInspector() {
+  const inspectorStyles = document.createElement('style');
+  inspectorStyles.textContent = `
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;  
+    overflow: hidden;
+  }
+
+  #game-container {
+    height: 66vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f0f0;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  #inspector {
+    width: 100%;
+    height: 34vh;
+    background: #202124;
+    border-top: 1px solid #454545;
+    color: #fff;
+    font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+    overflow: auto;
+    box-sizing: border-box; 
+  }
+
+  .inspector-header {
+    padding: 8px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #454545;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .inspector-tab {
+    padding: 6px 12px;
+    color: #999;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .inspector-tab.active {
+    background: #454545;
+    color: #fff;
+  }
+
+  .inspector-content {
+    padding: 8px;
+  }
+
+  .property-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 4px 0;
+  }
+
+  .property-name {
+    color: #9b9b9b;
+    margin-right: 8px;
+    flex: 0 0 150px;
+  }
+
+  .property-value {
+    color: #5db0d7;
+  }
+
+  .property-value.number {
+    color: #9980ff;
+  }
+
+  .property-value.boolean {
+    color: #ff8c7c;
+  }
+`;
+  document.head.appendChild(inspectorStyles);
+
+  // Create a container for the game canvas
+  const gameContainer = document.createElement('div');
+  gameContainer.id = 'game-container';
+
+  // Move the existing canvas (created in createCanvas()) into the container
+  const existingCanvas = document.querySelector('canvas');
+  if (existingCanvas) {
+    existingCanvas.remove();
+    gameContainer.appendChild(existingCanvas);
+  }
+
+  // Create the inspector panel element
+  const inspector = document.createElement('div');
+  inspector.id = 'inspector';
+  inspector.innerHTML = `
+    <div class="inspector-header">
+      <div class="inspector-tab active">Console</div>
+      <div class="inspector-tab">Game State</div>
+    </div>
+    <div class="inspector-content">
+      <div class="property-row">
+        <span class="property-name">playerPosition</span>
+        <span class="property-value">[0, 0]</span>
+      </div>
+      <div class="property-row">
+        <span class="property-name">coinsCollected</span>
+        <span class="property-value number">0</span>
+      </div>
+      <div class="property-row">
+        <span class="property-name">fireballsShot</span>
+        <span class="property-value number">0</span>
+      </div>
+      <div class="property-row">
+        <span class="property-name">enemiesDefeated</span>
+        <span class="property-value number">0</span>
+      </div>
+      <div class="property-row">
+        <span class="property-name">reachedFlag</span>
+        <span class="property-value boolean">false</span>
+      </div>
+      <div class="property-row">
+        <span class="property-name">flagPoleHeight</span>
+        <span class="property-value number">0</span>
+      </div>
+    </div>
+  `;
+
+  // Append the game container and inspector to the document body
+  document.body.appendChild(gameContainer);
+  document.body.appendChild(inspector);
+
+  // Define the updateInspector function globally so it can be called from the game loop.
+  window.updateInspector = function() {
+    if (!player) return;
+
+    const stats = {
+      playerPosition: player.pos,
+      coinsCollected: player.coinsCollected || 0,
+      fireballsShot: player.fireballsShot || 0,
+      enemiesDefeated: player.enemiesDefeated || 0,
+      reachedFlag: player.reachedFlag || false,
+      flagPoleHeight: player.flagPoleHeight || 0
+    };
+
+    // Loop through each property row and update its value if it exists in the stats.
+    const rows = inspector.querySelectorAll('.property-row');
+    rows.forEach(row => {
+      const nameEl = row.querySelector('.property-name');
+      const valueEl = row.querySelector('.property-value');
+      const key = nameEl.textContent.trim();
+      if (stats.hasOwnProperty(key)) {
+        const value = stats[key];
+        valueEl.textContent = Array.isArray(value) ? `[${value.join(', ')}]` : value;
+      }
+    });
+  };
+}
+
 var requestAnimFrame = (function () {
   return (
     window.requestAnimationFrame ||
@@ -53,6 +222,10 @@ function initializeGame() {
   player.enemiesDefeated = 0;
   player.reachedFlag = false;
   player.flagPoleHeight = 0;
+
+  if (!document.getElementById('inspector')) {
+    createInspector();
+  }
   
   level = null;
   gameTime = 0;
@@ -372,7 +545,6 @@ async function sendGameplayUpdate(state) {
   }
 }
 
-// Add this new function for immediate updates
 async function sendImmediateGameplayUpdate(state) {
   try {
     // Ensure player stats are properly initialized
@@ -576,6 +748,10 @@ function update(dt) {
   handleInput(dt);
   updateEntities(dt, gameTime);
   checkCollisions();
+
+  if (typeof window.updateInspector === 'function') {
+    window.updateInspector();
+  }
 }
 
 // Reset game back to sign-in screen
