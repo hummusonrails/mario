@@ -659,11 +659,11 @@ function handleGamepadInput(dt) {
   //console.log("Gamepad Buttons count:", gp.buttons.length);
 
   // Log button states for debugging
-  gp.buttons.forEach((button, index) => {
-    if (button.pressed) {
-      console.log(`Button ${index} pressed`);
-    }
-  });
+  //gp.buttons.forEach((button, index) => {
+  //  if (button.pressed) {
+  //    console.log(`Button ${index} pressed`);
+  //  }
+  //});
 
   if (player.piping || player.dying || player.noInput) return;
 
@@ -675,12 +675,12 @@ function handleGamepadInput(dt) {
     movingRight: false,
   };
 
-  if (gp.buttons[1].pressed) {
+  if (gp.buttons[1].pressed || gp.buttons[2].pressed) {
     player.run();
     actionState.running = true;
   } else player.noRun();
 
-  if (gp.buttons[0].pressed || gp.buttons[2].pressed) {
+  if (gp.buttons[0].pressed) {
     player.jump();
     actionState.jumping = true;
   } else player.noJump();
