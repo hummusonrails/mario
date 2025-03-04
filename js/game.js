@@ -652,11 +652,11 @@ function handleCombinedInput(dt) {
 /* Function to poll gamepad input and trigger player actions */
 function handleGamepadInput(dt) {
   if (player.piping || player.dying || player.noInput) return;
-  console.log("searching for gamepad")
+  //console.log("searching for gamepad")
   const gamepads = navigator.getGamepads();
   const gp = gamepads[0]; // Using the first connected gamepad
   if (!gp) return;
-  console.log("Gamepad Buttons count:", gp.buttons.length);
+  //console.log("Gamepad Buttons count:", gp.buttons.length);
 
   // Log button states for debugging
   gp.buttons.forEach((button, index) => {
@@ -680,7 +680,7 @@ function handleGamepadInput(dt) {
     actionState.running = true;
   } else player.noRun();
 
-  if (gp.buttons[0].pressed) {
+  if (gp.buttons[0].pressed || gp.buttons[2].pressed) {
     player.jump();
     actionState.jumping = true;
   } else player.noJump();
