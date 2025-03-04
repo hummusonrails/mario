@@ -22,7 +22,7 @@ body {
   overflow: hidden;
   height: 100%;
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+  background-color: #FFF0DB;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -43,6 +43,19 @@ html {
   border-radius: 8px;
   font-size: 14px;
 }
+.controls {
+  /* optional styling */
+  font-family: 'Open Sans', sans-serif;
+  margin: 1rem;
+}
+.controls .label {
+  display: inline-block;
+  width: 160px;     /* adjust to the desired 'tab' width */
+  font-weight: 600; /* optional: bold labels */
+}
+.controls .text {
+  display: inline-block;
+}
 
 /* Center sign-in form */
 form#sign-in-form {
@@ -56,8 +69,8 @@ form#sign-in-form {
 }
 
 form#sign-in-form h1 {
-  font-size: 24px;
   margin-bottom: 20px;
+  font-weight:900;
 }
 
 form#sign-in-form label {
@@ -82,7 +95,6 @@ form#sign-in-form input[type="checkbox"] {
 }
 
 form#sign-in-form button {
-  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 4px;
@@ -104,6 +116,12 @@ form#sign-in-form a {
 
 form#sign-in-form a:hover {
   text-decoration: underline;
+}
+
+#sign-in-form img#logo {
+  display: block;
+  margin: 0 auto 1rem; /* centers the logo and adds spacing below */
+  max-width: 150px;    /* adjust as needed */
 }
 
 .timer {

@@ -1,5 +1,5 @@
-BACKEND_URL = "https://mario-p44r.onrender.com";
-// BACKEND_URL = "http://localhost:3000";
+//BACKEND_URL = "https://mario-p44r.onrender.com";
+BACKEND_URL = "http://localhost:3000";
 
 // Create and initialize the inspector panel
 function createInspector() {
@@ -13,6 +13,8 @@ function createInspector() {
     flex-direction: column;
     align-items: stretch;  
     overflow: hidden;
+    font-family: 'Open Sans', sans-serif;
+    background: url("background.png") no-repeat center center;
   }
 
   #game-container {
@@ -144,7 +146,7 @@ function createInspector() {
   document.body.appendChild(inspector);
 
   // Define the updateInspector function globally so it can be called from the game loop.
-  window.updateInspector = function() {
+  window.updateInspector = function () {
     if (!player) return;
 
     const stats = {
@@ -197,6 +199,18 @@ var timerInterval = null;
 var lastUpdateTime = 0;
 let UPDATE_INTERVAL = 1000; // Update every 1 second
 
+let isGamepadConnected = false;
+
+window.addEventListener("gamepadconnected", (e) => {
+  isGamepadConnected = true;
+  console.log("Gamepad connected:", e.gamepad);
+});
+
+window.addEventListener("gamepaddisconnected", (e) => {
+  isGamepadConnected = false;
+  console.log("Gamepad disconnected:", e.gamepad);
+});
+
 // Create canvas
 function createCanvas() {
   canvas = document.createElement("canvas");
@@ -214,7 +228,7 @@ function initializeGame() {
   updateables = [];
   fireballs = [];
   player = new Mario.Player([0, 0]);
-  
+
   // Initialize player stats
   player.coins = 0;  // Regular coin counter
   player.coinsCollected = 0;  // Tracking counter
@@ -226,11 +240,11 @@ function initializeGame() {
   if (!document.getElementById('inspector')) {
     createInspector();
   }
-  
+
   level = null;
   gameTime = 0;
   gameTimer = 50; // Reset timer
-  
+
   // Clear any existing timer
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -238,7 +252,7 @@ function initializeGame() {
   if (timerDisplay) {
     timerDisplay.remove();
   }
-  
+
   // Start new timer
   startGameTimer();
 
@@ -259,7 +273,7 @@ function showSignInForm() {
   // Create form
   const form = document.createElement("form");
   form.id = "sign-in-form";
-  
+
   // Add styles
   const styles = document.createElement("style");
   styles.textContent = `
@@ -270,7 +284,7 @@ function showSignInForm() {
       background: linear-gradient(to bottom, #ffffff, #f0f0f0);
       border-radius: 1rem;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Open Sans', sans-serif;
       animation: slideIn 0.5s ease-out;
     }
     @keyframes slideIn {
@@ -282,9 +296,8 @@ function showSignInForm() {
       font-size: 1.875rem;
       font-weight: 800;
       margin-bottom: 2rem;
-      background: linear-gradient(to right, #ef4444, #eab308, #22c55e);
       -webkit-background-clip: text;
-      color: transparent;
+      color: balck;
       position: relative;
     }
     #sign-in-form h1::before,
@@ -309,7 +322,7 @@ function showSignInForm() {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
-      color: #4b5563;
+      color:rgb(0, 0, 0);
     }
     #sign-in-form input[type="text"],
     #sign-in-form input[type="email"] {
@@ -320,6 +333,7 @@ function showSignInForm() {
       border-radius: 0.5rem;
       transition: all 0.2s;
       font-size: 0.875rem;
+      box-sizing: border-box;
     }
     #sign-in-form input:focus {
       outline: none;
@@ -336,7 +350,7 @@ function showSignInForm() {
     #sign-in-form button {
       width: 100%;
       padding: 0.75rem;
-      background: linear-gradient(to right, #ef4444, #dc2626);
+      background: #D9152A;
       color: white;
       border: none;
       border-radius: 0.5rem;
@@ -372,6 +386,7 @@ function showSignInForm() {
   document.head.appendChild(styles);
 
   form.innerHTML = `
+  <img src="js/logo.png" alt="Logo" id="logo" />
   <h1>Welcome to Couchbase Mario!</h1>
   <label for="name">Name:</label>
   <input type="text" id="name" name="name" required placeholder="Enter your name">
@@ -396,114 +411,114 @@ function showSignInForm() {
   <button type="submit">Start Your Adventure!</button>
 `;
 
-// Append the form to the body
-document.body.appendChild(form);
+  // Append the form to the body
+  document.body.appendChild(form);
 
-// Get references to the submit button and input fields
-const submitButton = form.querySelector('button[type="submit"]');
-const emailInput = form.querySelector('input[name="email"]');
-const nameInput = form.querySelector('input[name="name"]');
+  // Get references to the submit button and input fields
+  const submitButton = form.querySelector('button[type="submit"]');
+  const emailInput = form.querySelector('input[name="email"]');
+  const nameInput = form.querySelector('input[name="name"]');
 
-// Create error message elements for email and name
-let emailErrorElement = document.createElement("div");
-emailErrorElement.id = "email-error";
-emailErrorElement.style.color = "red";
-emailErrorElement.style.fontSize = "0.875rem";
-emailErrorElement.style.marginBottom = "1rem";
-emailInput.parentNode.insertBefore(emailErrorElement, emailInput.nextSibling);
+  // Create error message elements for email and name
+  let emailErrorElement = document.createElement("div");
+  emailErrorElement.id = "email-error";
+  emailErrorElement.style.color = "red";
+  emailErrorElement.style.fontSize = "0.875rem";
+  emailErrorElement.style.marginBottom = "1rem";
+  emailInput.parentNode.insertBefore(emailErrorElement, emailInput.nextSibling);
 
-let nameErrorElement = document.createElement("div");
-nameErrorElement.id = "name-error";
-nameErrorElement.style.color = "red";
-nameErrorElement.style.fontSize = "0.875rem";
-nameErrorElement.style.marginBottom = "1rem";
-nameInput.parentNode.insertBefore(nameErrorElement, nameInput.nextSibling);
+  let nameErrorElement = document.createElement("div");
+  nameErrorElement.id = "name-error";
+  nameErrorElement.style.color = "red";
+  nameErrorElement.style.fontSize = "0.875rem";
+  nameErrorElement.style.marginBottom = "1rem";
+  nameInput.parentNode.insertBefore(nameErrorElement, nameInput.nextSibling);
 
-// Check for the work_emails flag in the URL
-const urlParams = new URLSearchParams(window.location.search);
-const workEmailsOnly = urlParams.get("work_emails") === "true";
+  // Check for the work_emails flag in the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const workEmailsOnly = urlParams.get("work_emails") === "true";
 
-// Helper function to perform combined validation
-function validateForm() {
-  let disable = false;
+  // Helper function to perform combined validation
+  function validateForm() {
+    let disable = false;
 
-  // Validate name: require at least two words
-  const nameVal = nameInput.value.trim();
-  if (nameVal.split(/\s+/).length < 2) {
-    nameErrorElement.textContent = "Please enter your first and last name.";
-    disable = true;
-  } else {
-    nameErrorElement.textContent = "";
-  }
-
-  // Validate email only if work emails are required
-  if (workEmailsOnly) {
-    const emailVal = emailInput.value.trim().toLowerCase();
-    if (emailVal.endsWith("@gmail.com")) {
-      emailErrorElement.textContent = "Only work emails are accepted. Please use your work email.";
+    // Validate name: require at least two words
+    const nameVal = nameInput.value.trim();
+    if (nameVal.split(/\s+/).length < 2) {
+      nameErrorElement.textContent = "Please enter your first and last name.";
       disable = true;
     } else {
-      emailErrorElement.textContent = "";
+      nameErrorElement.textContent = "";
     }
-  }
-  
-  submitButton.disabled = disable;
-}
 
-// Attach input listeners to both the email and name fields
-nameInput.addEventListener("input", validateForm);
-if (workEmailsOnly) {
-  emailInput.addEventListener("input", validateForm);
-}
+    // Validate email only if work emails are required
+    if (workEmailsOnly) {
+      const emailVal = emailInput.value.trim().toLowerCase();
+      if (emailVal.endsWith("@gmail.com")) {
+        emailErrorElement.textContent = "Only work emails are accepted. Please use your work email.";
+        disable = true;
+      } else {
+        emailErrorElement.textContent = "";
+      }
+    }
 
-// Handle form submission
-form.addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const name = form.elements.name.value.trim();
-  const email = form.elements.email.value.trim().toLowerCase();
-  const phone = form.elements.phone.value;
-  const company = form.elements.company.value;
-  const job_title = form.elements.job_title.value;
-  const consent = form.elements.consent.checked;
-
-  // Final validation for work emails
-  if (workEmailsOnly && email.endsWith("@gmail.com")) {
-    alert("Only work emails are accepted. Please enter a non-Gmail address.");
-    return;
-  }
-  // Final validation for name (ensure at least two words)
-  if (name.split(/\s+/).length < 2) {
-    alert("Please enter your first and last name.");
-    return;
+    submitButton.disabled = disable;
   }
 
-  try {
-    // Send player data to the server
-    const response = await fetch(`${BACKEND_URL}/api/players`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, company, phone, job_title, consent }),
-    });
-
-    if (!response.ok) throw new Error("Failed to create player record");
-
-    const data = await response.json();
-    console.log("Player record created:", data);
-    playerId = data.playerId;
-
-    // Animate form out
-    form.style.animation = 'slideOut 0.5s ease-out forwards';
-    
-    // Start the game after animation
-    setTimeout(() => {
-      form.style.display = "none";
-      canvas.style.display = "block";
-      initializeGame();
-    }, 500);
-  } catch (error) {
-    console.error("Error:", error);
+  // Attach input listeners to both the email and name fields
+  nameInput.addEventListener("input", validateForm);
+  if (workEmailsOnly) {
+    emailInput.addEventListener("input", validateForm);
   }
-});
+
+  // Handle form submission
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim().toLowerCase();
+    const phone = form.elements.phone.value;
+    const company = form.elements.company.value;
+    const job_title = form.elements.job_title.value;
+    const consent = form.elements.consent.checked;
+
+    // Final validation for work emails
+    if (workEmailsOnly && email.endsWith("@gmail.com")) {
+      alert("Only work emails are accepted. Please enter a non-Gmail address.");
+      return;
+    }
+    // Final validation for name (ensure at least two words)
+    if (name.split(/\s+/).length < 2) {
+      alert("Please enter your first and last name.");
+      return;
+    }
+
+    try {
+      // Send player data to the server
+      const response = await fetch(`${BACKEND_URL}/api/players`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, company, phone, job_title, consent }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create player record");
+
+      const data = await response.json();
+      console.log("Player record created:", data);
+      playerId = data.playerId;
+
+      // Animate form out
+      form.style.animation = 'slideOut 0.5s ease-out forwards';
+
+      // Start the game after animation
+      setTimeout(() => {
+        form.style.display = "none";
+        canvas.style.display = "block";
+        initializeGame();
+      }, 500);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  });
 };
 
 // Throttle network updates
@@ -619,6 +634,73 @@ function initLevel() {
   main();
 }
 
+window.addEventListener("gamepadconnected", (e) => {
+  console.log("Gamepad connected:", e.gamepad);
+});
+window.addEventListener("gamepaddisconnected", (e) => {
+  console.log("Gamepad disconnected:", e.gamepad);
+});
+
+function handleCombinedInput(dt) {
+  if (isGamepadConnected) {
+    handleGamepadInput(dt);
+  } else {
+    handleInput(dt);
+  }
+}
+
+/* Function to poll gamepad input and trigger player actions */
+function handleGamepadInput(dt) {
+  if (player.piping || player.dying || player.noInput) return;
+  console.log("searching for gamepad")
+  const gamepads = navigator.getGamepads();
+  const gp = gamepads[0]; // Using the first connected gamepad
+  if (!gp) return;
+  console.log("Gamepad Buttons count:", gp.buttons.length);
+
+  // Log button states for debugging
+  gp.buttons.forEach((button, index) => {
+    if (button.pressed) {
+      console.log(`Button ${index} pressed`);
+    }
+  });
+
+  if (player.piping || player.dying || player.noInput) return;
+
+  const actionState = {
+    jumping: false,
+    running: false,
+    crouching: false,
+    movingLeft: false,
+    movingRight: false,
+  };
+
+  if (gp.buttons[1].pressed) {
+    player.run();
+    actionState.running = true;
+  } else player.noRun();
+
+  if (gp.buttons[0].pressed) {
+    player.jump();
+    actionState.jumping = true;
+  } else player.noJump();
+
+  if (gp.buttons[13].pressed) {
+    player.crouch();
+    actionState.crouching = true;
+  } else player.noCrouch();
+
+  if (gp.buttons[14].pressed) {
+    player.moveLeft();
+    actionState.movingLeft = true;
+  } else if (gp.buttons[15].pressed) {
+    player.moveRight();
+    actionState.movingRight = true;
+  } else player.noWalk();
+
+  sendGameplayUpdate({ action: actionState });
+}
+
 // Handles user input
 function handleInput(dt) {
   if (player.piping || player.dying || player.noInput) return;
@@ -661,7 +743,7 @@ function handleInput(dt) {
 function updateEntities(dt, gameTime) {
   player.update(dt, vX);
   updateables.forEach((ent) => ent.update(dt, gameTime));
-  
+
   if (player.exiting) {
     if (player.pos[0] > vX + 96) vX = player.pos[0] - 96;
   } else if (level.scrolling && player.pos[0] > vX + 80) {
@@ -745,7 +827,10 @@ function main() {
 // Update the game state
 function update(dt) {
   gameTime += dt;
-  handleInput(dt);
+  //handleInput(dt);
+  //handleGamepadInput(dt);
+
+  handleCombinedInput(dt);
   updateEntities(dt, gameTime);
   checkCollisions();
 
@@ -784,7 +869,7 @@ function startGameTimer() {
   timerInterval = setInterval(() => {
     gameTimer--;
     timerDisplay.textContent = gameTimer + 's';
-    
+
     if (gameTimer <= 0) {
       clearInterval(timerInterval);
       endGame();
@@ -796,7 +881,7 @@ function endGame() {
   // Pause all game music and sounds
   music.overworld.pause();
   music.underground.pause();
-  
+
   // Show game over popup
   setTimeout(() => {
     alert('Time\'s up! Game Over!');
