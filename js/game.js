@@ -113,27 +113,27 @@ function createInspector() {
     </div>
     <div class="inspector-content">
       <div class="property-row">
-        <span class="property-name">playerPosition</span>
+        <span class="property-name">playerPosition 📍</span>
         <span class="property-value">[0, 0]</span>
       </div>
       <div class="property-row">
-        <span class="property-name">coinsCollected</span>
+        <span class="property-name">coinsCollected 🪙</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">fireballsShot</span>
+        <span class="property-name">fireballsShot 🔥</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">enemiesDefeated</span>
+        <span class="property-name">enemiesDefeated 👾</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">reachedFlag</span>
+        <span class="property-name">reachedFlag 🚩</span>
         <span class="property-value boolean">false</span>
       </div>
       <div class="property-row">
-        <span class="property-name">flagPoleHeight</span>
+        <span class="property-name">flagPoleHeight 🏁</span>
         <span class="property-value number">0</span>
       </div>
     </div>
@@ -191,7 +191,7 @@ var vX = 0,
 var gameTime = 0;
 var playerId; // Player ID for backend integration
 var previousScore = 0;
-var gameTimer = 50; // 50 seconds
+var gameTimer = 40; // 50 seconds
 var timerDisplay = null;
 var timerInterval = null;
 var lastUpdateTime = 0;
