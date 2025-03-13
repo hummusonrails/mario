@@ -118,6 +118,10 @@
       if (!(hpos1[1] > hpos2[1]+ent.hitbox[3] || (hpos1[1]+this.hitbox[3] < hpos2[1]))) {
         this.hit = 1;
         ent.bump();
+        // If the collided entity is an enemy, increment the enemiesDefeated counter
+        if (level && level.enemies && level.enemies.indexOf(ent) !== -1) {
+          player.defeatEnemy('enemy');
+        }
       }
     }
   };

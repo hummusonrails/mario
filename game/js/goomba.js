@@ -28,9 +28,11 @@
 
     if (this.dying) {
       this.dying -= 1;
+
       if (!this.dying) {
         delete level.enemies[this.idx];
       }
+      return;
     }
     this.acc[1] = 0.2;
     this.vel[1] += this.acc[1];
@@ -92,21 +94,27 @@
 
     if (!(hpos1[0] > hpos2[0] + ent.hitbox[2] || (hpos1[0] + this.hitbox[2] < hpos2[0]))) {
         if (!(hpos1[1] > hpos2[1] + ent.hitbox[3] || (hpos1[1] + this.hitbox[3] < hpos2[1]))) {
-            if (ent instanceof Mario.Player) {
-                // Check if Mario's feet are above the enemy's head
-                var marioFeet = ent.pos[1] + ent.hitbox[3];
-                var enemyHead = this.pos[1];
-                
-                if (marioFeet <= enemyHead + 8 && ent.vel[1] > 0) {
-                    this.stomp();
-                } else if (ent.starTime) {
-                    this.bump();
-                } else {
-                    ent.damage();
-                }
-            } else {
-                this.collideWall();
+          if (ent instanceof Mario.Player) {
+            if (ent.starTime > 0) {
+              // Star-powered collision: immediately defeat the Goomba without triggering a bounce
+              this.bump();
+              if (ent.defeatEnemy) ent.defeatEnemy('goomba');
+              return;
             }
+            // Check if Mario's feet are above the enemy's head
+            var marioFeet = ent.pos[1] + ent.hitbox[3];
+            var enemyHead = this.pos[1];
+            
+            if (marioFeet <= enemyHead + 8 && ent.vel[1] > 0) {
+              this.stomp();
+              ent.bounce = true;
+              if (ent.defeatEnemy) ent.defeatEnemy('goomba');
+            } else {
+              ent.damage();
+            }
+          } else {
+            this.collideWall();
+          }
         }
     }
   };
@@ -116,12 +124,16 @@
     this.vel[0] = 0;
     player.bounce = true;
     sounds.stomp.play();
-    player.defeatEnemy('goomba');
+    //player.defeatEnemy('goomba');
+    this.sprite.pos = [32, 16];
+    this.sprite.size = [16, 16];
+    this.sprite.speed = 0;
     this.dying = 10;
   };
 
   Goomba.prototype.bump = function() {
     sounds.kick.play();
+    //player.defeatEnemy('goomba');
     this.sprite.img = 'sprites/enemyr.png';
     this.flipping = true;
     this.pos[1] -= 1;

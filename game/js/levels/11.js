@@ -55,6 +55,9 @@ var oneone = Mario.oneone = function() {
    goombaSprite: function() {
      return new Mario.Sprite('sprites/enemy.png', [0, 16], [16,16], 3, [0,1]);
    },
+   squashedGoombaSprite: function() {
+    return new Mario.Sprite('sprites/enemy.png', [32, 16], [16,16], 0); 
+  },
    koopaSprite: function() {
      return new Mario.Sprite('sprites/enemy.png', [96,0], [16,32], 2, [0,1]);
    },
@@ -142,9 +145,9 @@ var oneone = Mario.oneone = function() {
   level.putBrick(92, 5, null);
   level.putBrick(93, 5, null);
   level.putQBlock(94, 5, new Mario.Bcoin([1504, 80]));
-  level.putBrick(94, 9, null);
-  level.putBrick(100, 9, new Mario.Star([1600, 144]));
-  level.putBrick(101, 9, null);
+  level.putBrick(94, 9,  new Mario.Bcoin([1504, 144]), 5);
+  level.putBrick(100, 9, null);
+  level.putBrick(101, 9, new Mario.Star([1616, 144]), 1);
   level.putQBlock(105, 9, new Mario.Bcoin([1680, 144]));
   level.putQBlock(108, 9, new Mario.Bcoin([1728, 144]));
   level.putQBlock(108, 5, new Mario.Mushroom([1728, 80]));
@@ -194,24 +197,30 @@ var oneone = Mario.oneone = function() {
   level.putWall(189, 13, 8);
   level.putFlagpole(198);
 
+  //testing only
+  //level.putKoopa(18, 11); 
+  //level.putBrick(10, 9,  new Mario.Bcoin([160, 144]), 5);
+  //level.putBrick(11, 9, new Mario.Star([176, 144]), 1);
+  //level.putQBlock(9, 9, new Mario.Bcoin([144, 144]));
+  
   //and enemies
   level.putGoomba(22, 12);
   level.putGoomba(40, 12);
   level.putGoomba(50, 12);
-  level.putGoomba(51, 12);
+  level.putGoomba(51.5, 12);
   level.putGoomba(82, 4);
   level.putGoomba(84, 4);
-  level.putGoomba(100, 12);
-  level.putGoomba(102, 12);
+  level.putGoomba(97, 12);
+  level.putGoomba(98.5, 12);
   level.putGoomba(114, 12);
-  level.putGoomba(115, 12);
-  level.putGoomba(122, 12);
-  level.putGoomba(123, 12);
-  level.putGoomba(125, 12);
-  level.putGoomba(126, 12);
+  level.putGoomba(115.5, 12);
+  level.putGoomba(124, 12);
+  level.putGoomba(125.5, 12);
+  level.putGoomba(128, 12);
+  level.putGoomba(129.5, 12);
   level.putGoomba(170, 12);
   level.putGoomba(172, 12);
-  level.putKoopa(35, 11);
+  level.putKoopa(107, 11);
 
   music.underground.pause();
   // music.overworld.currentTime = 0;
