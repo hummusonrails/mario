@@ -131,22 +131,15 @@
     this.blocks[y][x] = new Mario.Block( {
       pos: [x*16, y*16],
       item: item,
-      itemCount: 1,
       sprite: this.qblockSprite,
       usedSprite: this.ublockSprite
     });
   };
 
-  Level.prototype.putBrick = function(x, y, item, count) {
-    let itemCount = 0;
-    if (item) {
-      // If the item has an 'amount' property, use it; otherwise, default to 1
-      itemCount = count;
-    }
+  Level.prototype.putBrick = function(x,y,item) {
     this.blocks[y][x] = new Mario.Block({
-      pos: [x * 16, y * 16],
+      pos: [x*16, y*16],
       item: item,
-      itemCount: itemCount,
       sprite: this.brickSprite,
       bounceSprite: this.brickBounceSprite,
       usedSprite: this.ublockSprite,

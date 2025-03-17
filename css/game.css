@@ -1,0 +1,137 @@
+/* Reset */
+html, body, ul, li {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+/* Center canvas */
+canvas {
+  display: block;
+  width: 762px;
+  margin: 0 auto;
+  background-color: blue;
+}
+
+p {
+  text-align: center;
+}
+
+/* Full-screen body */
+body {
+  overflow: hidden;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #FFF0DB;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Information text (e.g., controls) */
+.info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.controls {
+  /* optional styling */
+  font-family: 'Open Sans', sans-serif;
+  margin: 1rem;
+}
+.controls .label {
+  display: inline-block;
+  width: 160px;     /* adjust to the desired 'tab' width */
+  font-weight: 600; /* optional: bold labels */
+}
+.controls .text {
+  display: inline-block;
+}
+
+/* Center sign-in form */
+form#sign-in-form {
+  background-color: white;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  padding: 20px;
+  text-align: center;
+}
+
+form#sign-in-form h1 {
+  margin-bottom: 20px;
+  font-weight:900;
+}
+
+form#sign-in-form label {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+form#sign-in-form input[type="text"],
+form#sign-in-form input[type="email"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+form#sign-in-form input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+form#sign-in-form button {
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form#sign-in-form button:hover {
+  background-color: #45a049;
+}
+
+/* Links styling */
+form#sign-in-form a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+form#sign-in-form a:hover {
+  text-decoration: underline;
+}
+
+#sign-in-form img#logo {
+  display: block;
+  margin: 0 auto 1rem; /* centers the logo and adds spacing below */
+  max-width: 150px;    /* adjust as needed */
+}
+
+.timer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}

@@ -20,9 +20,7 @@ const connectCouchbase = async () => {
       password: process.env.COUCHBASE_PASSWORD,
       configProfile: "wanDevelopment",
     });
-    
   }
-  console.log("connected to cluster")
   return cluster;
 };
 
