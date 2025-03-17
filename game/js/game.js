@@ -3,96 +3,6 @@ BACKEND_URL = "https://mario-p44r.onrender.com";
 
 // Create and initialize the inspector panel
 function createInspector() {
-  const inspectorStyles = document.createElement('style');
-  inspectorStyles.textContent = `
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;  
-    overflow: hidden;
-    font-family: 'Open Sans', sans-serif;
-    background: url("background.png") no-repeat center center;
-  }
-
-  #game-container {
-    height: 66vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f0f0f0;
-  }
-
-  canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  #inspector {
-    width: 100%;
-    height: 34vh;
-    background: #202124;
-    border-top: 1px solid #454545;
-    color: #fff;
-    font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
-    font-size: 12px;
-    overflow: auto;
-    box-sizing: border-box; 
-  }
-
-  .inspector-header {
-    padding: 8px;
-    background: #2d2d2d;
-    border-bottom: 1px solid #454545;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .inspector-tab {
-    padding: 6px 12px;
-    color: #999;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-
-  .inspector-tab.active {
-    background: #454545;
-    color: #fff;
-  }
-
-  .inspector-content {
-    padding: 8px;
-  }
-
-  .property-row {
-    display: flex;
-    align-items: flex-start;
-    padding: 4px 0;
-  }
-
-  .property-name {
-    color: #9b9b9b;
-    margin-right: 8px;
-    flex: 0 0 150px;
-  }
-
-  .property-value {
-    color: #5db0d7;
-  }
-
-  .property-value.number {
-    color: #9980ff;
-  }
-
-  .property-value.boolean {
-    color: #ff8c7c;
-  }
-`;
-  document.head.appendChild(inspectorStyles);
 
   // Create a container for the game canvas
   const gameContainer = document.createElement('div');
@@ -193,7 +103,7 @@ var vX = 0,
 var gameTime = 0;
 var playerId; // Player ID for backend integration
 var previousScore = 0;
-var gameTimer = 40; // 50 seconds
+var gameTimer = 45; // 50 seconds
 var timerDisplay = null;
 var timerInterval = null;
 var lastUpdateTime = 0;
@@ -216,6 +126,7 @@ function createCanvas() {
   canvas = document.createElement("canvas");
   ctx = canvas.getContext("2d");
   canvas.width = 762;
+  //canvas.width = window.innerWidth;
   canvas.height = 720;
   ctx.scale(3, 3);
   canvas.style.display = "none"; // Initially hide the canvas
@@ -243,7 +154,7 @@ function initializeGame() {
 
   level = null;
   gameTime = 0;
-  gameTimer = 50; // Reset timer
+  gameTimer = 45; // Reset timer
 
   // Clear any existing timer
   if (timerInterval) {
@@ -274,116 +185,6 @@ function showSignInForm() {
   const form = document.createElement("form");
   form.id = "sign-in-form";
 
-  // Add styles
-  const styles = document.createElement("style");
-  styles.textContent = `
-    #sign-in-form {
-      max-width: 400px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: linear-gradient(to bottom, #ffffff, #f0f0f0);
-      border-radius: 1rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      font-family: 'Open Sans', sans-serif;
-      animation: slideIn 0.5s ease-out;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    #sign-in-form h1 {
-      text-align: center;
-      font-size: 1.875rem;
-      font-weight: 800;
-      margin-bottom: 2rem;
-      -webkit-background-clip: text;
-      color: balck;
-      position: relative;
-    }
-    #sign-in-form h1::before,
-    #sign-in-form h1::after {
-      content: '';
-      display: block;
-      width: 24px;
-      height: 24px;
-      background-image: url('/mario-coin.webp');
-      background-size: contain;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      animation: bounce 0.5s alternate infinite;
-    }
-    #sign-in-form h1::before { left: -32px; }
-    #sign-in-form h1::after { right: -32px; }
-    @keyframes bounce {
-      to { transform: translateY(-60%); }
-    }
-    #sign-in-form label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color:rgb(0, 0, 0);
-    }
-    #sign-in-form input[type="text"],
-    #sign-in-form input[type="email"] {
-      width: 100%;
-      padding: 0.5rem 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      transition: all 0.2s;
-      font-size: 0.875rem;
-      box-sizing: border-box;
-    }
-    #sign-in-form input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    #sign-in-form label[for="consent"] {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 1rem 0;
-      font-size: 0.875rem;
-    }
-    #sign-in-form button {
-      width: 100%;
-      padding: 0.75rem;
-      background: #D9152A;
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    #sign-in-form button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    }
-    #sign-in-form button::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        to right,
-        transparent,
-        rgba(255,255,255,0.2),
-        transparent
-      );
-      animation: shine 3s infinite;
-    }
-    @keyframes shine {
-      to { left: 100%; }
-    }
-  `;
-  document.head.appendChild(styles);
 
   form.innerHTML = `
   <img src="js/logo.png" alt="Logo" id="logo" />
@@ -392,7 +193,7 @@ function showSignInForm() {
   <input type="text" id="name" name="name" required placeholder="Enter your name">
   
   <label for="email">Work Email:</label>
-  <input type="email" id="email" name="email" required placeholder="Enter your work email">
+  <input type="text" id="email" name="email" required placeholder="Enter your work email">
   
   <label for="phone">Phone Number:</label>
   <input type="text" id="phone" name="phone" required placeholder="Enter your phone number">
@@ -547,6 +348,18 @@ async function sendGameplayUpdate(state) {
         }
       }
     };
+    if (state.action === 'levelExit') {
+      // TO DO: Save level completion to Couchbase
+      console.log("Congratulations you reached the end!");
+      clearInterval(timerInterval); // Stop the timer
+      gameTimer = 50; // Reset the timer to initial value
+      setTimeout(() => {
+        alert('Level Complete! Well done!');
+        endGame();
+        window.location.reload();
+         // End the game properly
+      }, 150);
+    }
 
     // Use non-blocking fetch
     fetch(`${BACKEND_URL}/api/players/${playerId}`, {
@@ -613,7 +426,9 @@ function initLevel() {
     overworld: new Audio("sounds/aboveground_bgm.ogg"),
     underground: new Audio("sounds/underground_bgm.ogg"),
     clear: new Audio("sounds/stage_clear.wav"),
+    star: new Audio("sounds/star.mp3"),
     death: new Audio("sounds/mariodie.wav"),
+    gameover: new Audio("sounds/gameover.mp3")
   };
   sounds = {
     smallJump: new Audio("sounds/jump-small.wav"),
@@ -744,9 +559,7 @@ function updateEntities(dt, gameTime) {
   player.update(dt, vX);
   updateables.forEach((ent) => ent.update(dt, gameTime));
 
-  if (player.exiting) {
-    if (player.pos[0] > vX + 96) vX = player.pos[0] - 96;
-  } else if (level.scrolling && player.pos[0] > vX + 80) {
+  if (!player.exiting && level.scrolling && player.pos[0] > vX + 80) {
     vX = player.pos[0] - 80;
   }
 
@@ -783,28 +596,40 @@ function render() {
   ctx.fillStyle = level.background;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // 1. Draw scenery FIRST (background elements)
   for (let i = 0; i < 15; i++) {
     for (let j = Math.floor(vX / 16) - 1; j < Math.floor(vX / 16) + 20; j++) {
       if (level.scenery[i][j]) renderEntity(level.scenery[i][j]);
     }
   }
 
+  // 2. Draw items, enemies, fireballs
   level.items.forEach((item) => renderEntity(item));
   level.enemies.forEach((enemy) => renderEntity(enemy));
   fireballs.forEach((fireball) => renderEntity(fireball));
 
+  // 4. Draw PLAYER after pipes, but before blocks
+  if (player.invincibility % 2 === 0) renderEntity(player);
+
+  // 3. Draw static structures (pipes, walls)
+  level.pipes.forEach((pipe) => renderEntity(pipe));
   for (let i = 0; i < 15; i++) {
     for (let j = Math.floor(vX / 16) - 1; j < Math.floor(vX / 16) + 20; j++) {
       if (level.statics[i][j]) renderEntity(level.statics[i][j]);
+    }
+  }
+
+
+
+  // 5. Draw blocks last (ensuring they appear above the player if needed)
+  for (let i = 0; i < 15; i++) {
+    for (let j = Math.floor(vX / 16) - 1; j < Math.floor(vX / 16) + 20; j++) {
       if (level.blocks[i][j]) {
         renderEntity(level.blocks[i][j]);
         updateables.push(level.blocks[i][j]);
       }
     }
   }
-
-  if (player.invincibility % 2 === 0) renderEntity(player);
-  level.pipes.forEach((pipe) => renderEntity(pipe));
 }
 
 // Helper function to render an entity
@@ -812,15 +637,23 @@ function renderEntity(entity) {
   entity.render(ctx, vX, vY);
 }
 
+let fixedDelta = 1 / 60; // fixed timestep (approximately 16.67 ms)
+let accumulator = 0;
+
 // Main game loop
 function main() {
   const now = Date.now();
-  const dt = (now - lastTime) / 1000.0;
-
-  update(dt);
-  render();
-
+  const frameTime = (now - lastTime) / 1000.0;
   lastTime = now;
+  accumulator += frameTime;
+
+  // Update the simulation in fixed increments
+  while (accumulator >= fixedDelta) {
+    update(fixedDelta);
+    accumulator -= fixedDelta;
+  }
+
+  render();
   requestAnimFrame(main);
 }
 
@@ -871,22 +704,30 @@ function startGameTimer() {
     timerDisplay.textContent = gameTimer + 's';
 
     if (gameTimer <= 0) {
+      
       clearInterval(timerInterval);
       endGame();
+      music.gameover.play()
+      // Show game over popup
+      setTimeout(() => {
+        alert('Time\'s up! Game Over!');
+        //endGame();
+        window.location.reload();
+      }, 100);
+
     }
   }, 1000);
 }
 
 function endGame() {
   // Pause all game music and sounds
+  
   music.overworld.pause();
   music.underground.pause();
+  music.star.pause()
+  //window.location.reload();
 
-  // Show game over popup
-  setTimeout(() => {
-    alert('Time\'s up! Game Over!');
-    window.location.reload();
-  }, 100);
+
 }
 
 // Initialize the app

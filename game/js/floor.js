@@ -35,11 +35,40 @@
 							ent.jumping = 0;
 						}
 					} else if (Math.abs(hpos2[1] - hpos1[1] - this.hitbox[3]) > ent.vel[1] &&
-					center + 2 >= hpos1[0] && center - 2 <= hpos1[0] + this.hitbox[2]) {
-						//ent is under the block.
+					         center + 2 >= hpos1[0] && center - 2 <= hpos1[0] + this.hitbox[2]) {
+						// ent is under the block.
 						ent.vel[1] = 0;
 						ent.pos[1] = hpos1[1] + this.hitbox[3];
 						if (ent instanceof Mario.Player) {
+							// Check for any enemy on top of the block
+							if (level.enemies && level.enemies.length) {
+								for (var i = 0; i < level.enemies.length; i++) {
+									var enemy = level.enemies[i];
+									if (enemy && !enemy.dying) {
+										var enemyBottom = enemy.pos[1] + enemy.hitbox[3];
+										var blockTop = this.pos[1];
+										// If enemy's bottom is roughly at the block's top (within 2 pixels)
+										if (enemyBottom >= blockTop - 2 && enemyBottom <= blockTop + 2) {
+											var enemyLeft = enemy.pos[0] + enemy.hitbox[0];
+											var enemyRight = enemyLeft + enemy.hitbox[2];
+											var blockLeft = this.pos[0];
+											var blockRight = blockLeft + this.hitbox[2];
+											if (enemyRight > blockLeft && enemyLeft < blockRight) {
+												enemy.bump();
+												if (player && player.defeatEnemy) {
+													if (enemy instanceof Mario.Goomba) {
+														player.defeatEnemy('goomba');
+													} else if (enemy instanceof Mario.Koopa) {
+														player.defeatEnemy('koopa');
+													} else {
+														player.defeatEnemy('enemy');
+													}
+												}
+											}
+										}
+									}
+								}
+							}
 							this.bonk(ent.power);
 							ent.jumping = 0;
 						}
