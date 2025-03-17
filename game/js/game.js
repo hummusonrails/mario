@@ -25,27 +25,27 @@ function createInspector() {
     </div>
     <div class="inspector-content">
       <div class="property-row">
-        <span class="property-name">playerPosition</span>
+        <span class="property-name">playerPosition 📍</span>
         <span class="property-value">[0, 0]</span>
       </div>
       <div class="property-row">
-        <span class="property-name">coinsCollected</span>
+        <span class="property-name">coinsCollected 🪙</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">fireballsShot</span>
+        <span class="property-name">fireballsShot 🔥</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">enemiesDefeated</span>
+        <span class="property-name">enemiesDefeated 👾</span>
         <span class="property-value number">0</span>
       </div>
       <div class="property-row">
-        <span class="property-name">reachedFlag</span>
+        <span class="property-name">reachedFlag 🚩</span>
         <span class="property-value boolean">false</span>
       </div>
       <div class="property-row">
-        <span class="property-name">flagPoleHeight</span>
+        <span class="property-name">flagPoleHeight 🏁</span>
         <span class="property-value number">0</span>
       </div>
     </div>
