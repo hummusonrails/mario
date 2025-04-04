@@ -14,7 +14,6 @@ function createInspector() {
     align-items: stretch;  
     overflow: hidden;
     font-family: 'Open Sans', sans-serif;
-    background: url("background.png") no-repeat center center;
   }
 
   #game-container {
@@ -269,9 +268,6 @@ function initializeGame() {
 }
 
 function showWaitingRoom() {
-  // Clear any existing UI
-  document.body.innerHTML = '';
-
   // Create a container for the waiting room
   const waitingDiv = document.createElement('div');
   waitingDiv.id = 'waiting-room';
