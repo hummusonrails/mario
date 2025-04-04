@@ -268,258 +268,183 @@ function initializeGame() {
   resources.onReady(initLevel);
 }
 
-// Create and display sign-in form
-function showSignInForm() {
-  // Create form
-  const form = document.createElement("form");
-  form.id = "sign-in-form";
+function showWaitingRoom() {
+  // Clear any existing UI
+  document.body.innerHTML = '';
 
-  // Add styles
-  const styles = document.createElement("style");
-  styles.textContent = `
-    #sign-in-form {
-      max-width: 400px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: linear-gradient(to bottom, #ffffff, #f0f0f0);
-      border-radius: 1rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      font-family: 'Open Sans', sans-serif;
-      animation: slideIn 0.5s ease-out;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    #sign-in-form h1 {
-      text-align: center;
-      font-size: 1.875rem;
-      font-weight: 800;
-      margin-bottom: 2rem;
-      -webkit-background-clip: text;
-      color: balck;
-      position: relative;
-    }
-    #sign-in-form h1::before,
-    #sign-in-form h1::after {
-      content: '';
-      display: block;
-      width: 24px;
-      height: 24px;
-      background-image: url('/mario-coin.webp');
-      background-size: contain;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      animation: bounce 0.5s alternate infinite;
-    }
-    #sign-in-form h1::before { left: -32px; }
-    #sign-in-form h1::after { right: -32px; }
-    @keyframes bounce {
-      to { transform: translateY(-60%); }
-    }
-    #sign-in-form label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color:rgb(0, 0, 0);
-    }
-    #sign-in-form input[type="text"],
-    #sign-in-form input[type="email"] {
-      width: 100%;
-      padding: 0.5rem 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      transition: all 0.2s;
-      font-size: 0.875rem;
-      box-sizing: border-box;
-    }
-    #sign-in-form input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    #sign-in-form label[for="consent"] {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 1rem 0;
-      font-size: 0.875rem;
-    }
-    #sign-in-form button {
-      width: 100%;
-      padding: 0.75rem;
-      background: #D9152A;
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    #sign-in-form button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    }
-    #sign-in-form button::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        to right,
-        transparent,
-        rgba(255,255,255,0.2),
-        transparent
-      );
-      animation: shine 3s infinite;
-    }
-    @keyframes shine {
-      to { left: 100%; }
-    }
-  `;
-  document.head.appendChild(styles);
+  // Create a container for the waiting room
+  const waitingDiv = document.createElement('div');
+  waitingDiv.id = 'waiting-room';
+  waitingDiv.style.maxWidth = '500px';
+  waitingDiv.style.margin = '20px auto';
+  waitingDiv.style.padding = '20px';
+  waitingDiv.style.backgroundColor = '#5C94FC'; // Mario sky blue
+  waitingDiv.style.border = '4px solid #000';
+  waitingDiv.style.borderRadius = '10px';
+  waitingDiv.style.boxShadow = '0 0 0 4px #FFF, 0 0 0 8px #000';
+  waitingDiv.style.textAlign = 'center';
+  waitingDiv.style.fontFamily = '"Courier New", monospace'; // Pixel-like font
 
-  form.innerHTML = `
-  <img src="js/logo.png" alt="Logo" id="logo" />
-  <h1>Welcome to Couchbase Mario!</h1>
-  <label for="name">Name:</label>
-  <input type="text" id="name" name="name" required placeholder="Enter your name">
-  
-  <label for="email">Work Email:</label>
-  <input type="email" id="email" name="email" required placeholder="Enter your work email">
-  
-  <label for="phone">Phone Number:</label>
-  <input type="text" id="phone" name="phone" required placeholder="Enter your phone number">
-  
-  <label for="company">Company:</label>
-  <input type="text" id="company" name="company" required placeholder="Enter your company name">
-  
-  <label for="job_title">Job Title:</label>
-  <input type="text" id="job_title" name="job_title" required placeholder="Enter your job title">
-  
-  <label for="consent">
-    <input type="checkbox" id="consent" name="consent">
-    <span>I agree to receive communications from Couchbase.</span>
-  </label>
-  
-  <button type="submit">Start Your Adventure!</button>
-`;
+  const heading = document.createElement('h2');
+  heading.textContent = "SELECT YOUR PLAYER";
+  heading.style.color = '#FFF';
+  heading.style.textShadow = '2px 2px 0 #000';
+  heading.style.fontSize = '24px';
+  heading.style.marginBottom = '20px';
+  heading.style.textTransform = 'uppercase';
+  waitingDiv.appendChild(heading);
 
-  // Append the form to the body
-  document.body.appendChild(form);
+  // Container for the player list (now a dropdown)
+  const listContainer = document.createElement('div');
+  listContainer.id = 'player-list';
+  listContainer.style.marginBottom = '20px';
+  waitingDiv.appendChild(listContainer);
 
-  // Get references to the submit button and input fields
-  const submitButton = form.querySelector('button[type="submit"]');
-  const emailInput = form.querySelector('input[name="email"]');
-  const nameInput = form.querySelector('input[name="name"]');
-
-  // Create error message elements for email and name
-  let emailErrorElement = document.createElement("div");
-  emailErrorElement.id = "email-error";
-  emailErrorElement.style.color = "red";
-  emailErrorElement.style.fontSize = "0.875rem";
-  emailErrorElement.style.marginBottom = "1rem";
-  emailInput.parentNode.insertBefore(emailErrorElement, emailInput.nextSibling);
-
-  let nameErrorElement = document.createElement("div");
-  nameErrorElement.id = "name-error";
-  nameErrorElement.style.color = "red";
-  nameErrorElement.style.fontSize = "0.875rem";
-  nameErrorElement.style.marginBottom = "1rem";
-  nameInput.parentNode.insertBefore(nameErrorElement, nameInput.nextSibling);
-
-  // Check for the work_emails flag in the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const workEmailsOnly = urlParams.get("work_emails") === "true";
-
-  // Helper function to perform combined validation
-  function validateForm() {
-    let disable = false;
-
-    // Validate name: require at least two words
-    const nameVal = nameInput.value.trim();
-    if (nameVal.split(/\s+/).length < 2) {
-      nameErrorElement.textContent = "Please enter your first and last name.";
-      disable = true;
-    } else {
-      nameErrorElement.textContent = "";
-    }
-
-    // Validate email only if work emails are required
-    if (workEmailsOnly) {
-      const emailVal = emailInput.value.trim().toLowerCase();
-      if (emailVal.endsWith("@gmail.com")) {
-        emailErrorElement.textContent = "Only work emails are accepted. Please use your work email.";
-        disable = true;
-      } else {
-        emailErrorElement.textContent = "";
-      }
-    }
-
-    submitButton.disabled = disable;
-  }
-
-  // Attach input listeners to both the email and name fields
-  nameInput.addEventListener("input", validateForm);
-  if (workEmailsOnly) {
-    emailInput.addEventListener("input", validateForm);
-  }
-
-  // Handle form submission
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const name = form.elements.name.value.trim();
-    const email = form.elements.email.value.trim().toLowerCase();
-    const phone = form.elements.phone.value;
-    const company = form.elements.company.value;
-    const job_title = form.elements.job_title.value;
-    const consent = form.elements.consent.checked;
-
-    // Final validation for work emails
-    if (workEmailsOnly && email.endsWith("@gmail.com")) {
-      alert("Only work emails are accepted. Please enter a non-Gmail address.");
-      return;
-    }
-    // Final validation for name (ensure at least two words)
-    if (name.split(/\s+/).length < 2) {
-      alert("Please enter your first and last name.");
-      return;
-    }
-
-    try {
-      // Send player data to the server
-      const response = await fetch(`${BACKEND_URL}/api/players`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, company, phone, job_title, consent }),
-      });
-
-      if (!response.ok) throw new Error("Failed to create player record");
-
-      const data = await response.json();
-      console.log("Player record created:", data);
-      playerId = data.playerId;
-
-      // Animate form out
-      form.style.animation = 'slideOut 0.5s ease-out forwards';
-
-      // Start the game after animation
-      setTimeout(() => {
-        form.style.display = "none";
-        canvas.style.display = "block";
-        initializeGame();
-      }, 500);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+  // Refresh button to update the list manually
+  const refreshButton = document.createElement('button');
+  refreshButton.textContent = "REFRESH LIST";
+  refreshButton.style.backgroundColor = '#E52521'; // Mario red
+  refreshButton.style.color = 'white';
+  refreshButton.style.border = '4px solid #000';
+  refreshButton.style.borderRadius = '5px';
+  refreshButton.style.padding = '10px 20px';
+  refreshButton.style.fontSize = '16px';
+  refreshButton.style.fontWeight = 'bold';
+  refreshButton.style.cursor = 'pointer';
+  refreshButton.style.fontFamily = '"Courier New", monospace';
+  refreshButton.style.boxShadow = '2px 2px 0 #000';
+  refreshButton.addEventListener('click', () => {
+    fetchPlayerList();
   });
-};
+  
+  // Add hover effect
+  refreshButton.onmouseover = function() {
+    this.style.backgroundColor = '#FF4D4D';
+  };
+  refreshButton.onmouseout = function() {
+    this.style.backgroundColor = '#E52521';
+  };
+  
+  waitingDiv.appendChild(refreshButton);
+
+  document.body.appendChild(waitingDiv);
+  fetchPlayerList();
+}
+
+async function fetchPlayerList() {
+  const listContainer = document.getElementById('player-list');
+  listContainer.innerHTML = "<div style='color: white; font-weight: bold;'>LOADING...</div>";
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/players/all`);
+    if (!response.ok) throw new Error("Failed to fetch players");
+    const players = await response.json();
+
+    // Filter for waiting players
+    const waitingPlayers = players.filter(p => p.gameplay && p.gameplay.score === 0);
+    listContainer.innerHTML = "";
+    
+    if (waitingPlayers.length === 0) {
+      const message = document.createElement('div');
+      message.textContent = "NO PLAYERS WAITING. PLEASE REGISTER FIRST ON YOUR PHONE.";
+      message.style.color = 'white';
+      message.style.fontWeight = 'bold';
+      message.style.padding = '10px';
+      message.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      message.style.borderRadius = '5px';
+      listContainer.appendChild(message);
+      return;
+    }
+
+    // Create select dropdown
+    const selectBox = document.createElement('select');
+    selectBox.style.width = '80%';
+    selectBox.style.padding = '10px';
+    selectBox.style.fontSize = '16px';
+    selectBox.style.backgroundColor = '#FBD000'; // Mario yellow
+    selectBox.style.color = '#000';
+    selectBox.style.border = '4px solid #000';
+    selectBox.style.borderRadius = '5px';
+    selectBox.style.marginBottom = '20px';
+    selectBox.style.fontFamily = '"Courier New", monospace';
+    selectBox.style.cursor = 'pointer';
+    
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = "-- SELECT PLAYER --";
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    selectBox.appendChild(defaultOption);
+    
+    // Add player options
+    waitingPlayers.forEach(player => {
+      const nameParts = player.name.split(" ");
+      let displayName = nameParts[0];
+      if (nameParts.length > 1) {
+        displayName += " " + nameParts[1][0] + ".";
+      }
+      
+      const option = document.createElement('option');
+      option.value = player.id;
+      option.textContent = displayName;
+      selectBox.appendChild(option);
+    });
+    
+    listContainer.appendChild(selectBox);
+    
+    // Add play button
+    const playButton = document.createElement('button');
+    playButton.textContent = "PLAY!";
+    playButton.style.backgroundColor = '#1EB53A'; // Mario green
+    playButton.style.color = 'white';
+    playButton.style.border = '4px solid #000';
+    playButton.style.borderRadius = '5px';
+    playButton.style.padding = '10px 30px';
+    playButton.style.fontSize = '18px';
+    playButton.style.fontWeight = 'bold';
+    playButton.style.cursor = 'pointer';
+    playButton.style.fontFamily = '"Courier New", monospace';
+    playButton.style.display = 'block';
+    playButton.style.margin = '0 auto';
+    playButton.style.boxShadow = '2px 2px 0 #000';
+    
+    // Add hover effect
+    playButton.onmouseover = function() {
+      this.style.backgroundColor = '#2FD54A';
+    };
+    playButton.onmouseout = function() {
+      this.style.backgroundColor = '#1EB53A';
+    };
+    
+    playButton.addEventListener('click', () => {
+      if (selectBox.value) {
+        // Set the global playerId so that the game updates this player record
+        playerId = selectBox.value;
+        startGame();
+      } else {
+        alert("Please select a player first!");
+      }
+    });
+    
+    listContainer.appendChild(playButton);
+    
+  } catch (error) {
+    listContainer.innerHTML = "<div style='color: white; font-weight: bold; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;'>ERROR LOADING PLAYER LIST!</div>";
+    console.error(error);
+  }
+}
+
+function startGame() {
+  // Clear the waiting room UI
+  const waitingRoom = document.getElementById('waiting-room');
+  if (waitingRoom) {
+    waitingRoom.remove();
+  }
+  // Show the canvas and initialize the game
+  canvas.style.display = "block";
+  initializeGame();
+}
 
 // Throttle network updates
 UPDATE_INTERVAL = 1000; // Update every 1 second
@@ -854,7 +779,16 @@ function resetToSignIn() {
 
 // Add a mechanism to reset game when a level ends
 function onGameEnd() {
-  setTimeout(resetToSignIn, 1000);
+  setTimeout(() => {
+    // Reset current player for future updates
+    playerId = null;
+    if (timerInterval) clearInterval(timerInterval);
+    if (timerDisplay) timerDisplay.remove();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.style.display = "none";
+    // Show the waiting room so a new player selection is made
+    showWaitingRoom();
+  }, 1000);
 }
 
 function createTimer() {
@@ -891,4 +825,4 @@ function endGame() {
 
 // Initialize the app
 createCanvas();
-showSignInForm();
+showWaitingRoom();
