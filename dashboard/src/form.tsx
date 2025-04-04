@@ -320,9 +320,9 @@ export default function Form() {
       
       <footer style={styles.footer}>
         <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Privacy Policy</a>
-          <a href="#" style={styles.footerLink}>Terms of Use</a>
-          <a href="#" style={styles.footerLink}>Contact</a>
+          <a href="https://www.couchbase.com/privacy-policy/" style={styles.footerLink}>Privacy Policy</a>
+          <a href="https://www.couchbase.com/terms-of-use/" style={styles.footerLink}>Terms of Use</a>
+          <a href="https://www.couchbase.com/contact/" style={styles.footerLink}>Contact</a>
         </div>
         <div style={styles.copyright}>
           © {new Date().getFullYear()} Couchbase. All rights reserved.
