@@ -44,6 +44,19 @@ export default function Dashboard() {
     setIsRevealed(true)
   }
 
+  // Calculate score consistently
+  const calculateScore = (player: PlayerData) => {
+    const stats = player.cumulativeStats || {};
+    return (
+      (stats.coinsCollected || 0) * 100 +
+      (stats.enemiesDefeated || 0) * 500 +
+      (stats.flagPoleHeight || 0) * 1000
+    );
+  };
+
+  // Sort players by score
+  const sortedPlayers = [...players].sort((a, b) => calculateScore(b) - calculateScore(a));
+
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -91,9 +104,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-yellow-700">
-                    {players.reduce((sum, player) => {
-                      return sum + (player.cumulativeStats?.coinsCollected || 0);
-                    }, 0)}
+                    {players.reduce(
+                      (sum, player) => sum + (player.cumulativeStats?.coinsCollected || 0), 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -105,10 +118,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-red-700">
-                    {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                      return sum + (stats?.fireballsShot || 0)
-                    }, 0)}
+                    {players.reduce(
+                      (sum, player) => sum + (player.cumulativeStats?.fireballsShot || 0), 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -120,10 +132,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-purple-700">
-                    {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                      return sum + (stats?.enemiesDefeated || 0)
-                    }, 0)}
+                    {players.reduce(
+                      (sum, player) => sum + (player.cumulativeStats?.enemiesDefeated || 0), 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -135,10 +146,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-700">
-                    {players.reduce((sum, player) => {
-                      const stats = player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                      return sum + (stats?.flagPoleHeight ? 1 : 0)
-                    }, 0)}
+                    {players.reduce(
+                      (sum, player) => sum + (player.cumulativeStats?.flagPoleHeight ? 1 : 0), 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -213,75 +223,57 @@ export default function Dashboard() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className={!isRevealed ? "blur-sm" : ""}>
-                      {players
-                        .sort((a, b) => {
-                          const aStats = a.cumulativeStats || {};
-                          const bStats = b.cumulativeStats || {};                    
-                          const aScore = (aStats?.coinsCollected || 0) * 100 + (aStats?.enemiesDefeated || 0) * 500
-                          const bScore = (bStats?.coinsCollected || 0) * 100 + (bStats?.enemiesDefeated || 0) * 500
-                          return bScore - aScore
-                        })
-                        .map((player, index) => {
-                          const stats =
-                            player.gameplay.states[player.gameplay.states.length - 1]?.state?.state?.playerStats
-                          const score =
-                            (stats?.coinsCollected || 0) * 100 +
-                            (stats?.enemiesDefeated || 0) * 500 +
-                            (stats?.flagPoleHeight || 0) * 1000
 
-                          return (
-                            <tr key={player.name} className="border-b hover:bg-gray-50 transition-colors">
-                              <td className="px-4 py-4">
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={`
-                                    w-8 h-8 rounded-full flex items-center justify-center font-bold
-                                    ${
-                                      index === 0
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : index === 1
-                                          ? "bg-gray-100 text-gray-700"
-                                          : index === 2
-                                            ? "bg-orange-100 text-orange-700"
-                                            : "bg-gray-50 text-gray-500"
-                                    }
-                                  `}
-                                  >
-                                    #{index + 1}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-gray-900">{player.name}</span>
-                                  <span className="text-sm text-gray-500">{player.email}</span>
-                                </div>
-                              </td>
-                              <td className="px-4 py-4 text-center font-medium text-yellow-600">
-                                {player.cumulativeStats?.coinsCollected || 0}
-                              </td>
-                              <td className="px-4 py-4 text-center font-medium text-red-600">
-                                {player.cumulativeStats?.fireballsShot || 0}
-                              </td>
-                              <td className="px-4 py-4 text-center font-medium text-purple-600">
-                                {player.cumulativeStats?.enemiesDefeated || 0}
-                              </td>
-                              <td className="px-4 py-4 text-center font-medium text-green-600">
-                                {player.cumulativeStats?.flagPoleHeight || 0}
-                              </td>
-                              <td className="px-4 py-4 text-center">
-                                <span
-                                  className={`font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 ${!isRevealed ? "invisible" : ""}`}
-                                >
-                                {(player.cumulativeStats?.coinsCollected || 0) * 100 +
-                                  (player.cumulativeStats?.enemiesDefeated || 0) * 500 +
-                                  (player.cumulativeStats?.flagPoleHeight || 0) * 1000}
-                                </span>
-                              </td>
-                            </tr>
-                          )
-                        })}
+                    <tbody className={!isRevealed ? "blur-sm" : ""}>
+                      {sortedPlayers.map((player, index) => (
+                        <tr key={player.name} className="border-b hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`
+                                  w-8 h-8 rounded-full flex items-center justify-center font-bold
+                                  ${
+                                    index === 0
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : index === 1
+                                        ? "bg-gray-100 text-gray-700"
+                                        : index === 2
+                                          ? "bg-orange-100 text-orange-700"
+                                          : "bg-gray-50 text-gray-500"
+                                  }
+                                `}
+                              >
+                                #{index + 1}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-900">{player.name}</span>
+                              <span className="text-sm text-gray-500">{player.email}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center font-medium text-yellow-600">
+                            {player.cumulativeStats?.coinsCollected || 0}
+                          </td>
+                          <td className="px-4 py-4 text-center font-medium text-red-600">
+                            {player.cumulativeStats?.fireballsShot || 0}
+                          </td>
+                          <td className="px-4 py-4 text-center font-medium text-purple-600">
+                            {player.cumulativeStats?.enemiesDefeated || 0}
+                          </td>
+                          <td className="px-4 py-4 text-center font-medium text-green-600">
+                            {player.cumulativeStats?.flagPoleHeight || 0}
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span
+                              className={`font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 ${!isRevealed ? "invisible" : ""}`}
+                            >
+                              {calculateScore(player)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
