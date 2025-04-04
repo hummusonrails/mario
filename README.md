@@ -1,11 +1,6 @@
 # Mario Booth Activity
 
-[Mario.js](www.garrettjohnson.net/mario "Mario.js") is a clone of Super Mario Bros. for the Nintendo Entertainment System, implemented in Javascript.  It implements a hand-built game engine using the HTML5 Canvas.
-
-> [!CAUTION]
-> This project is for demonstration only. If you really want to play Mario, please do it on a console. The graphics, sounds, and original design of Super Mario Bros. are all owned by Nintendo.
-
-This fork of the code is designed to be run as a booth activity at an event. It comes in several parts:
+This is a JavaScript clone of Super Mario Bros. designed for event booth activities, it comes in several parts:
 
 - The Mario game itself
 - A backend Express server to send the game data to Couchbase and to the frontend
@@ -13,6 +8,9 @@ This fork of the code is designed to be run as a booth activity at an event. It 
   - A leaderboard for the game
   - A player sign-up form that is mobile optimized to be used at events with a QR code
   - An administrative interface for event organizers to view, manage and export player data
+
+> [!CAUTION]
+> This project is for demonstration only. If you really want to play Mario, please do it on a console. The graphics, sounds, and original design of Super Mario Bros. are all owned by Nintendo.
 
 ## Setup and Deployment
 
@@ -35,3 +33,7 @@ Players must complete a sign-up form before playing the game. Event organizers c
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+Thanks to [Garrett Johnson](https://www.garrettjohnson.net) for creating Mario.js, a JavaScript clone of Super Mario Bros. featuring a hand-built game engine using the HTML5 Canvas.
