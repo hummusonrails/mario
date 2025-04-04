@@ -1,67 +1,36 @@
+# Mario Booth Activity
+
 [Mario.js](www.garrettjohnson.net/mario "Mario.js") is a clone of Super Mario Bros. for the Nintendo Entertainment System, implemented in Javascript.  It implements a hand-built game engine using the HTML5 Canvas.
 
-Disclaimer: This project is for demonstration only. If you really want to play Mario, please do it on a console. The graphics, sounds, and original design of Super Mario Bros. are all owned by Nintendo.
+[!CAUTION]
+> This project is for demonstration only. If you really want to play Mario, please do it on a console. The graphics, sounds, and original design of Super Mario Bros. are all owned by Nintendo.
 
 This fork of the code is designed to be run as a booth activity at an event. It comes in several parts:
 
 - The Mario game itself
-- A backend Node server to send the game data to Couchbase and to the frontend
-- A frontend leaderboard built with React to display the game data
+- A backend Express server to send the game data to Couchbase and to the frontend
+- A frontend built with React that offers the following features:
+  - A leaderboard for the game
+  - A player sign-up form that is mobile optimized to be used at events with a QR code
+  - An administrative interface for event organizers to view, manage and export player data
 
-## The Mario Game
+## Setup and Deployment
 
-To run the Mario game, open up the [index.html](index.html) file in the root directory in a web browser. The game will start automatically.
+Detailed setup instructions for each component:
 
-This repository is also set up to host the game automatically on GitHub Pages in the repository it is hosted in. You can find it by navigating to `https://<username>.github.io/<repository>`. Make sure to adjust the `BACKEND_URL` variable defined in `js/game.js` at the top of the file to point to the backend Node.js server.
+* [Game](js/README.md): Instructions for running the Mario game locally and deploying it to GitHub Pages.
+* [Backend](server/README.md): Instructions for setting up the backend server and deploying it to Render.
+* [Dashboard](dashboard/README.md): Instructions for setting up the React-based frontend and deploying it to Render.
 
-Each player is required to complete a sign-up form before playing the game. The form asks the player for their name, email, company name and job title, as well as a checkbox to consent to receiving marketing emails. Once the form has been submitted this initiates a new player JSON document in the Couchbase database.
+## Game Access
 
-The administrator of the game can define whether or not to accept personal email addresses by specifying in the URL parameters of the game if `work_emails` is set to `true` or `false`. If `work_emails` is set to `true`, the game will only accept email addresses that contain a company domain. If `work_emails` is set to `false`, the game will accept any email address. For instance, if the URL of the game is `https://<username>.github.io/<repository>?work_emails=true`, the game will only accept email addresses from company domains. If the URL of the game is `https://<username>.github.io/<repository>?work_emails=false`, the game will accept any email address.
-
-## The Backend Server
-
-The Node.js server is found in `/server/server.js` and is responsible for sending the game data to Couchbase. The server is also responsible for sending the game data to the frontend leaderboard.
-
-To start the server, navigate to the `/server` directory and run `node server.js`.
-
-Make sure to fill in the `.env` file with your credentials *before* starting the server. There is an `.env.sample` file inside `/server` to show you what the `.env` file should look like:
+The game is hosted on GitHub Pages. You can access it at the following URL, fill in the respective username and repository name:
 
 ```bash
-COUCHBASE_URL=
-COUCHBASE_USERNAME=
-COUCHBASE_PASSWORD=
-COUCHBASE_BUCKET=
+https://<username>.github.io/<repository>
 ```
 
-## The Frontend Leaderboard
-
-The frontend leaderboard is built with React and is found in the `/dashboard` directory. The leaderboard displays the players in order of who is winning. It also shows the data from the game in JSON format on the right-hand side of the browser window. 
-
-You need to provide the URL to the backend Node server in the `.env` file located in the root directory of `/dashboard`. There is an `.env.sample` file inside `/dashboard` to show you what the `.env` file should look like:
-
-```bash
-VITE_BACKEND_URL=
-```
-
-Once you have filled in the `.env` file, you can start the leaderboard.
-
-To start the leaderboard, navigate to the `/dashboard` directory and run `npm run dev`. This will start the server on `localhost:5173`.
-
-Navigate in a browser window to [http://localhost:5173](http://localhost:5173) to see the leaderboard.
-
-### Leaderboard Administrative View
-
-The leaderboard also has an administrative view that allows you to see the data in the Couchbase database. To access the administrative view, navigate to [http://localhost:5173/admin](http://localhost:5173/admin) or to whatever URL you have set up for the leaderboard.
-
-You must set up an admin password in the `.env` file located in the root directory of `/dashboard`. There is an `.env.sample` file inside `/dashboard` to show you what the `.env` file should look like:
-
-```bash
-VITE_ADMIN_VIEW_PASSWORD=
-```
-
-If you do not set up an admin password, the admin view will not be accessible. 
-
-The admin view gives you the ability to download a spreadsheet of player data such as company, phone number, email and job title. You can name the spreadsheet download after the event the game was played at.
+Players must complete a sign-up form before playing the game. Event organizers can display a link to the mobile sign-up form with a QR code from the event booth. Players find their name at the beginning of the game after completing the sign-up form in order to play.
 
 ## License
 

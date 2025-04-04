@@ -1,50 +1,79 @@
-# React + TypeScript + Vite
+# Frontend Setup
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the React-based frontend dashboard for displaying the leaderboard of the Mario game, the player sign-up form, and an administrative interface for the event team.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* [Backend server URL](../server/)
 
-## Expanding the ESLint configuration
+## Setup Instructions
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Step 1: Install Dependencies
 
-- Configure the top-level `parserOptions` property like this:
+Navigate to the `/dashboard` directory and run:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Step 2: Configure Environment Variables
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Copy the provided `.env.sample` file to `.env` and fill in the required values:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+cp .env.sample .env
 ```
+
+Edit the `.env` file with the URL of the backend server and a password to view the admin dashboard:
+
+```bash
+VITE_BACKEND_URL=http://your-backend-url.com
+VITE_ADMIN_VIEW_PASSWORD=your-secure-password
+```
+
+### Step 3: Start the Development Server
+
+Start the development server using:
+
+```bash
+npm run dev
+```
+
+Your frontend dashboard will be running on `http://localhost:5173` by default.
+
+## Dashboard URLs
+
+The dashboard provides three primary URLs:
+
+* **Main Leaderboard**: `http://localhost:5173/`
+* **Player Sign-Up Form**: `http://localhost:5173/form`
+* **Admin Dashboard**: `http://localhost:5173/admin`
+
+### Administrative Interface
+
+The admin dashboard or interface provides event organizers access to:
+
+* View the player data stored in Couchbase
+* Delete any individual player data
+* Download the player data as a CSV file to import into any further tools
+* Delete all player data after the event is over
+
+## Deployment to the Cloud
+
+### Deploy to Render Instructions
+
+1. Create a new web service on [Render](https://render.com).
+2. Connect your GitHub repository through the dashboard.
+3. Fill out the Settings with the following in the Render dashboard for the project:
+    - **Branch**: `gh-pages`
+    - **Root Directory**: `dashboard`
+    - **Build Command**: `npm install`
+    - **Start Command**: `npm run dev -- --host`
+
+![](./readme_images/settings_options.png)
+
+4. Add the environment variables from your `.env` file in the Render dashboard under **Environment**. Render provides the option to copy and paste them directly from your `.env` file into their web dashboard or simply upload the `.env` file.
+
+![](./readme_images/env_vars_options.png)
+
+5. The deployment will start automatically. Copy the main URL of the deployed frontend. Now you can access the dashboard from going to the main URL, the admin interface by adding `/admin` to the URL, and the player sign-up form by adding `/form` to the URL.
